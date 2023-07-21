@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
@@ -16,10 +17,12 @@ type UserService interface {
 	GetAllUser(ctx context.Context) ([]entities.User, error)
 	GetUserByID(ctx context.Context, userID uuid.UUID) (entities.User, error)
 	GetUserByEmail(ctx context.Context, email string) (entities.User, error)
-	CheckUser(ctx context.Context, email string) (bool, error)
+	GetUserByUsername(ctx context.Context, username string) (entities.User, error)
+	CheckUserEmail(ctx context.Context, email string) (bool, error)
+	CheckUserUsername(ctx context.Context, username string) (bool, error)
 	UpdateUser(ctx context.Context, userDTO dto.UserUpdateDTO) error
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
-	Verify(ctx context.Context, email string, password string) (bool, error)
+	Verify(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
 }
 
 type userService struct {
@@ -34,9 +37,10 @@ func NewUserService(ur repository.UserRepository) UserService {
 
 func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateDTO) (entities.User, error) {
 	user := entities.User{}
+
 	if userDTO.Password != userDTO.ConfirmPassword {
 		return entities.User{}, dto.ErrPasswordNotMatch
-	}
+	}	
 
 	err := smapping.FillStruct(&user, smapping.MapFields(userDTO))
 	user.Role = "user"
@@ -58,13 +62,29 @@ func (us *userService) GetUserByEmail(ctx context.Context, email string) (entiti
 	return us.userRepository.GetUserByEmail(ctx, email)
 }
 
-func (us *userService) CheckUser(ctx context.Context, email string) (bool, error) {
-	res, err := us.userRepository.GetUserByEmail(ctx, email)
+func (us *userService) GetUserByUsername(ctx context.Context, username string) (entities.User, error) {
+	return us.userRepository.GetUserByUsername(ctx, username)
+}
+
+func (us *userService) CheckUserEmail(ctx context.Context, email string) (bool, error) {
+	mail, err := us.userRepository.GetUserByEmail(ctx, email)
 	if err != nil {
 		return false, err
 	}
 
-	if res.Email == "" {
+	if mail.Email == "" {
+		return false, err
+	}
+	return true, nil
+}
+
+func (us *userService) CheckUserUsername(ctx context.Context, username string) (bool, error) {
+	user, err := us.userRepository.GetUserByUsername(ctx, username)
+	if err != nil {
+		return false, err
+	}
+
+	if user.Username == "" {
 		return false, err
 	}
 	return true, nil
@@ -82,19 +102,41 @@ func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return us.userRepository.DeleteUser(ctx, userID)
 }
 
-func (us *userService) Verify(ctx context.Context, email string, password string) (bool, error) {
-	res, err := us.userRepository.GetUserByEmail(ctx, email)
-	if err != nil {
-		return false, err
-	}
+func (us *userService) Verify(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error) {
+	if userDTO.Email != "" {
+		user, err := us.userRepository.GetUserByEmail(ctx, userDTO.Email)
+		if err != nil {
+			return false, err
+		}
 
-	checkPassword, err := helpers.CheckPassword(res.Password, []byte(password))
-	if err != nil {
-		return false, err
-	}
+		if user.Email == "" {
+			return false, dto.ErrorUserNotFound
+		}
 
-	if res.Email == email && checkPassword {
+		if checkPassword, err := helpers.CheckPassword(user.Password, []byte(userDTO.Password)); !checkPassword {
+			return false, err
+		}
+
+		return true, nil
+	} else if userDTO.Username != "" {
+		user, err := us.userRepository.GetUserByUsername(ctx, userDTO.Username)
+		if err != nil {
+			return false, err
+		}
+		fmt.Println(user.Username, user.Password)
+
+		if user.Username == "" {
+			return false, dto.ErrorUserNotFound
+		}
+
+		fmt.Println(user.Username, user.Password)
+		if checkPassword, err := helpers.CheckPassword(user.Password, []byte(userDTO.Password)); !checkPassword {
+			return false, err
+		}
+
 		return true, nil
 	}
-	return false, nil
+
+	return false, dto.ErrorUserNotFound
 }
+

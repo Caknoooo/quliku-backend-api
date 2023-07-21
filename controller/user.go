@@ -39,11 +39,18 @@ func (uc *userController) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	if checkUser, err := uc.userService.CheckUser(ctx.Request.Context(), user.Email); checkUser {
-		res := utils.BuildResponseFailed("Email Sudah Terdaftar", err.Error(), utils.EmptyObj{})
+	if checkUser, _ := uc.userService.CheckUserEmail(ctx.Request.Context(), user.Email); checkUser {
+		res := utils.BuildResponseFailed("Email Sudah Terdaftar", "failed", utils.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
+
+	if checkUser, _ := uc.userService.CheckUserUsername(ctx.Request.Context(), user.Username); checkUser {
+		res := utils.BuildResponseFailed("Username Sudah Terdaftar", "failed", utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
 	result, err := uc.userService.RegisterUser(ctx.Request.Context(), user)
 	if err != nil {
 		res := utils.BuildResponseFailed("Gagal Menambahkan User", err.Error(), utils.EmptyObj{})
@@ -88,25 +95,36 @@ func (uc *userController) MeUser(ctx *gin.Context) {
 
 func (uc *userController) LoginUser(ctx *gin.Context) {
 	var userLoginDTO dto.UserLoginDTO
+	var user entities.User
 	if err := ctx.ShouldBind(&userLoginDTO); err != nil {
 		response := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
 
-	res, _ := uc.userService.Verify(ctx.Request.Context(), userLoginDTO.Email, userLoginDTO.Password)
+	res, err := uc.userService.Verify(ctx.Request.Context(), userLoginDTO)
 	if !res {
-		response := utils.BuildResponseFailed("Gagal Login", "Email atau Password Salah", utils.EmptyObj{})
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
-		return
-	}
-
-	user, err := uc.userService.GetUserByEmail(ctx.Request.Context(), userLoginDTO.Email)
-	if err != nil {
 		response := utils.BuildResponseFailed("Gagal Login", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
 		return
 	}
+
+	if userLoginDTO.Email != "" {
+		user, err = uc.userService.GetUserByEmail(ctx.Request.Context(), userLoginDTO.Email)
+		if err != nil {
+			response := utils.BuildResponseFailed("Gagal Login", err.Error(), utils.EmptyObj{})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+			return
+		}
+	} else if userLoginDTO.Username != "" {
+		user, err = uc.userService.GetUserByUsername(ctx.Request.Context(), userLoginDTO.Username)
+		if err != nil {
+			response := utils.BuildResponseFailed("Gagal Login", err.Error(), utils.EmptyObj{})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+			return
+		}
+	}
+
 	token := uc.jwtService.GenerateToken(user.ID, user.Role)
 	userResponse := entities.Authorization{
 		Token: token,
