@@ -34,17 +34,19 @@ func NewUserController(us services.UserService, jwt services.JWTService) UserCon
 func (uc *userController) RegisterUser(ctx *gin.Context) {
 	var user dto.UserCreateDTO
 	if err := ctx.ShouldBind(&user); err != nil {
-		panic(err) // harus diperbaiki
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
 	}
 
-	if checkUser, _ := uc.userService.CheckUser(ctx.Request.Context(), user.Email); checkUser {
-		res := utils.BuildResponseFailed("Email Sudah Terdaftar", "Failed", utils.EmptyObj{})
+	if checkUser, err := uc.userService.CheckUser(ctx.Request.Context(), user.Email); checkUser {
+		res := utils.BuildResponseFailed("Email Sudah Terdaftar", err.Error(), utils.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
 	result, err := uc.userService.RegisterUser(ctx.Request.Context(), user)
 	if err != nil {
-		res := utils.BuildResponseFailed("Gagal Menambahkan User", "Failed", utils.EmptyObj{})
+		res := utils.BuildResponseFailed("Gagal Menambahkan User", err.Error(), utils.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
@@ -86,7 +88,12 @@ func (uc *userController) MeUser(ctx *gin.Context) {
 
 func (uc *userController) LoginUser(ctx *gin.Context) {
 	var userLoginDTO dto.UserLoginDTO
-	err := ctx.ShouldBind(&userLoginDTO)
+	if err := ctx.ShouldBind(&userLoginDTO); err != nil {
+		response := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
 	res, _ := uc.userService.Verify(ctx.Request.Context(), userLoginDTO.Email, userLoginDTO.Password)
 	if !res {
 		response := utils.BuildResponseFailed("Gagal Login", "Email atau Password Salah", utils.EmptyObj{})
