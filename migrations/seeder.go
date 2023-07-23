@@ -19,17 +19,21 @@ func ListUserSeeder(db *gorm.DB) error {
 	var listUser = []entities.User{
 		{
 			NamaLengkap: "Admin",
+			Username: 	"admin",
 			NoTelp:      "081234567890",
 			Email:       "admin@gmail.com",
 			Password:    "admin123",
 			Role:        "admin",
+			IsVerified: true,
 		},
 		{
 			NamaLengkap: "User",
+			Username: 	"user",
 			NoTelp:      "081234567891",
 			Email:       "user@gmail.com",
 			Password:    "user123",
 			Role:        "user",
+			IsVerified: true,
 		},
 	}
 

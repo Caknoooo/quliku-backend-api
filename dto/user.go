@@ -9,6 +9,7 @@ import (
 var (
 	ErrPasswordNotMatch = errors.New("password not match")
 	ErrorUserNotFound   = errors.New("user not found")
+	ErrorFailedGenerateVerificationCode = errors.New("failed generate verification code")
 )
 
 type (
@@ -34,5 +35,18 @@ type (
 		Email    string `json:"email" form:"email,omitempty"`
 		Username string `json:"username" form:"username,omitempty"`
 		Password string `json:"password" form:"password"`
+	}
+
+	SendVerificationEmailRequest struct {
+		Email string `json:"email" form:"email" binding:"required"`
+	}
+
+	VerifyEmailRequest struct {
+		Token string `json:"token" form:"token" binding:"required"`
+	}
+
+	VerifyEmailResponse struct {
+		Email      string `json:"email"`
+		IsVerified bool   `json:"is_verified"`
 	}
 )
