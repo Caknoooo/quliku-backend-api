@@ -20,8 +20,9 @@ func main() {
 	var (
 		db             *gorm.DB                  = config.SetUpDatabaseConnection()
 		jwtService     services.JWTService       = services.NewJWTService()
+		userVerificationRepository repository.UserVerificationRepository = repository.NewUserVerificationRepository(db)
 		userRepository repository.UserRepository = repository.NewUserRepository(db)
-		userService    services.UserService      = services.NewUserService(userRepository)
+		userService    services.UserService      = services.NewUserService(userRepository, userVerificationRepository)
 		userController controller.UserController = controller.NewUserController(userService, jwtService)
 	)
 
