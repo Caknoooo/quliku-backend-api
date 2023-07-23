@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	ErrPasswordNotMatch = errors.New("password not match")
-	ErrorUserNotFound   = errors.New("user not found")
+	ErrPasswordNotMatch                 = errors.New("password not match")
+	ErrorUserNotFound                   = errors.New("user not found")
 	ErrorFailedGenerateVerificationCode = errors.New("failed generate verification code")
-	ErrorVerificationCodeNotMatch = errors.New("verification code not match")
+	ErrorVerificationCodeNotMatch       = errors.New("verification code not match")
+	ErrorExpiredVerificationCode        = errors.New("expired verification code")
 )
 
 type (

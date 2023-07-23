@@ -16,14 +16,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func main() {	
+func main() {
 	var (
-		db             *gorm.DB                  = config.SetUpDatabaseConnection()
-		jwtService     services.JWTService       = services.NewJWTService()
+		db                         *gorm.DB                              = config.SetUpDatabaseConnection()
+		jwtService                 services.JWTService                   = services.NewJWTService()
 		userVerificationRepository repository.UserVerificationRepository = repository.NewUserVerificationRepository(db)
-		userRepository repository.UserRepository = repository.NewUserRepository(db)
-		userService    services.UserService      = services.NewUserService(userRepository, userVerificationRepository)
-		userController controller.UserController = controller.NewUserController(userService, jwtService)
+		userRepository             repository.UserRepository             = repository.NewUserRepository(db)
+		userService                services.UserService                  = services.NewUserService(userRepository, userVerificationRepository)
+		userController             controller.UserController             = controller.NewUserController(userService, jwtService)
 	)
 
 	server := gin.Default()
@@ -31,7 +31,7 @@ func main() {
 	routes.User(server, userController, jwtService)
 
 	if err := migrations.Seeder(db); err != nil {
-		log.Fatalf("error migration seeder: %v", err)	
+		log.Fatalf("error migration seeder: %v", err)
 	}
 
 	port := os.Getenv("PORT")
