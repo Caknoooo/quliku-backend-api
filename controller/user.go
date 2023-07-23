@@ -13,6 +13,7 @@ import (
 type UserController interface {
 	RegisterUser(ctx *gin.Context)
 	GetAllUser(ctx *gin.Context)
+	VerifyEmail(ctx *gin.Context)
 	MeUser(ctx *gin.Context)
 	LoginUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
@@ -102,7 +103,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	res, err := uc.userService.Verify(ctx.Request.Context(), userLoginDTO)
+	res, err := uc.userService.VerifyLogin(ctx.Request.Context(), userLoginDTO)
 	if !res {
 		response := utils.BuildResponseFailed("Gagal Login", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
@@ -125,6 +126,12 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 		}
 	}
 
+	if !user.IsVerified {
+		response := utils.BuildResponseFailed("Gagal Login", "Email Belum Terverifikasi", utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
 	token := uc.jwtService.GenerateToken(user.ID, user.Role)
 	userResponse := entities.Authorization{
 		Token: token,
@@ -133,6 +140,25 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 
 	response := utils.BuildResponseSuccess("Berhasil Login", userResponse)
 	ctx.JSON(http.StatusOK, response)
+}
+
+func (uc *userController) VerifyEmail(ctx *gin.Context) {
+	var userVerificationDTO dto.UserVerificationDTO
+	if err := ctx.ShouldBind(&userVerificationDTO); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	userVerification, err := uc.userService.VerifyEmail(ctx.Request.Context(), userVerificationDTO)
+	if !userVerification {
+		res := utils.BuildResponseFailed("Gagal Verifikasi Email", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Verifikasi Email", userVerification)
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (uc *userController) UpdateUser(ctx *gin.Context) {

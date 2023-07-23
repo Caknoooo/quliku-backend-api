@@ -11,6 +11,7 @@ import (
 type UserVerificationRepository interface {
 	Create(UserID uuid.UUID, receiveCode string, expiredAt time.Time) error
 	SendCode(UserID uuid.UUID, sendCode string) error
+	Check(UserID uuid.UUID) (entities.UserVerification, error)
 }
 
 type userVerificationRepository struct {
@@ -47,4 +48,14 @@ func(u *userVerificationRepository) SendCode(UserID uuid.UUID, sendCode string) 
 	}
 
 	return nil
+}
+
+func(u *userVerificationRepository) Check(UserID uuid.UUID) (entities.UserVerification, error) {
+	var userVerification entities.UserVerification
+
+	if err := u.db.Model(&entities.UserVerification{}).Where("user_id = ?", UserID).First(&userVerification).Error; err != nil {
+		return entities.UserVerification{}, err
+	}
+
+	return userVerification, nil
 }
