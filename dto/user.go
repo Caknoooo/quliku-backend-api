@@ -10,6 +10,7 @@ var (
 	ErrPasswordNotMatch = errors.New("password not match")
 	ErrorUserNotFound   = errors.New("user not found")
 	ErrorFailedGenerateVerificationCode = errors.New("failed generate verification code")
+	ErrorVerificationCodeNotMatch = errors.New("verification code not match")
 )
 
 type (

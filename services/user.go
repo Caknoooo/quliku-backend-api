@@ -26,10 +26,8 @@ type UserService interface {
 	CheckUserUsername(ctx context.Context, username string) (bool, error)
 	UpdateUser(ctx context.Context, userDTO dto.UserUpdateDTO) error
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
-	Verify(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
-
-	// Mail
-	// MakeVerificationEmail()
+	VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
+	VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error)
 }
 
 type userService struct {
@@ -103,10 +101,10 @@ func MakeVerificationEmail(receiverEmail string) (map[string]string, error) {
 					text-align: center;
 				}
 				.code {
-					font-size: 24px;
-					background-color: #f1f1f1;
+					font-size: 30px;
 					padding: 10px;
 					display: inline-block;
+					margin: 0 10px; /* Add margin between each digit */
 				}
 				.note {
 					font-size: 14px;
@@ -116,17 +114,38 @@ func MakeVerificationEmail(receiverEmail string) (map[string]string, error) {
 		</head>
 		<body>
 			<p>Hi, %s! Thanks for registering an account on Quliku.App.</p>
-			<p>Before you can access your account, you need to verify your email address by clicking the link below:</p>
+			<p>Please verify your email address by entering the code below:</p>	
 			<div class="code-container">
 				<p class="code">%s</p>
 			</div>
-			<p class="note">Please note that this link will expire after 1 hour.</p>
-			<p>If you did not sign up for an account on Quliku, you can safely ignore this email.</p>
+			<p class="note">Please note that this code will expire after 1 hour.</p>
+			<p>Thanks,<br>Quliku Team</p>
 		</body>
 		</html>
 	`, receiverEmail, token)
 
 	return draftEmail, nil
+}
+
+func (us *userService) VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error) {
+	userVerification, err := us.userVeritificationRepository.Check(userVerificationDTO.UserID)
+	if err != nil {
+		return false, err
+	}
+
+	if userVerification.ReceiveCode != userVerificationDTO.SendCode {
+		return false, dto.ErrorVerificationCodeNotMatch
+	}
+
+	if userVerification.ExpiredAt.Before(time.Now()) {
+		return false, dto.ErrorVerificationCodeNotMatch
+	}
+
+	if err := us.userVeritificationRepository.SendCode(userVerification.UserID, userVerificationDTO.SendCode); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func EncodeToString(max int) string {
@@ -197,7 +216,7 @@ func (us *userService) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	return us.userRepository.DeleteUser(ctx, userID)
 }
 
-func (us *userService) Verify(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error) {
+func (us *userService) VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error) {
 	if userDTO.Email != "" {
 		user, err := us.userRepository.GetUserByEmail(ctx, userDTO.Email)
 		if err != nil {
@@ -234,4 +253,3 @@ func (us *userService) Verify(ctx context.Context, userDTO dto.UserLoginDTO) (bo
 
 	return false, dto.ErrorUserNotFound
 }
-
