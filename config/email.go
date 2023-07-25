@@ -1,6 +1,9 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"os"
+	"github.com/spf13/viper"
+)
 
 type EmailConfig struct {
 	Host         string `mapstructure:"SMTP_HOST"`
@@ -11,7 +14,9 @@ type EmailConfig struct {
 }
 
 func NewEmailConfig() (*EmailConfig, error) {
-	viper.SetConfigFile(".env")
+	if os.Getenv("APP_ENV") != "Production" {
+		viper.SetConfigFile(".env")
+	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
