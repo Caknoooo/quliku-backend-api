@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"github.com/spf13/viper"
 )
 
@@ -14,13 +13,13 @@ type EmailConfig struct {
 }
 
 func NewEmailConfig() (*EmailConfig, error) {
-	if os.Getenv("APP_ENV") != "Production" {
-		viper.SetConfigFile(".env")
-	}
+	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
+
+	viper.AutomaticEnv()
 
 	var emailConfig EmailConfig
 	if err := viper.Unmarshal(&emailConfig); err != nil {
