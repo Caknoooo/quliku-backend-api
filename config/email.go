@@ -1,6 +1,8 @@
 package config
 
 import (
+	"errors"
+
 	"github.com/spf13/viper"
 )
 
@@ -15,11 +17,11 @@ type EmailConfig struct {
 func NewEmailConfig() (*EmailConfig, error) {
 	viper.SetConfigFile(".env")
 
-	// if err := viper.ReadInConfig(); err != nil {
-	// 	return nil, err
-	// }
-
 	viper.WatchConfig()
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, errors.New("error reading config file")
+	}
 
 	viper.AutomaticEnv()
 
