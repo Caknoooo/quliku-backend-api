@@ -1,8 +1,6 @@
 package config
 
 import (
-	"errors"
-
 	"github.com/spf13/viper"
 )
 
@@ -21,9 +19,9 @@ func NewEmailConfig() (*EmailConfig, error) {
 
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.New("error reading config file")
-	}
+	// if err := viper.ReadInConfig(); err != nil {
+	// 	return nil, errors.New("error reading config file")
+	// }
 
 	var config EmailConfig
 	if err := viper.Unmarshal(&config); err != nil {
