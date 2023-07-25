@@ -13,11 +13,13 @@ type EmailConfig struct {
 }
 
 func NewEmailConfig() (*EmailConfig, error) {
-	viper.SetConfigFile(".env.production")
+	viper.SetConfigFile(".env")
 
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
-	}
+	// if err := viper.ReadInConfig(); err != nil {
+	// 	return nil, err
+	// }
+
+	viper.WatchConfig()
 
 	viper.AutomaticEnv()
 
