@@ -15,15 +15,15 @@ type EmailConfig struct {
 }
 
 func NewEmailConfig() (*EmailConfig, error) {
-	viper.SetConfigFile(".env")
+	// viper.SetConfigFile(".env")
 
-	viper.WatchConfig()
+	// viper.WatchConfig()
+
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.New("error reading config file")
 	}
-
-	viper.AutomaticEnv()
 
 	var config EmailConfig
 	if err := viper.Unmarshal(&config); err != nil {
