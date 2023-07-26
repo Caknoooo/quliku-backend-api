@@ -10,5 +10,6 @@ func Mandor(route *gin.Engine, MandorController controller.MandorController) {
 	{
 		routes.POST("", MandorController.RegisterMandorStart)
 		routes.POST("/next", MandorController.RegisterMandorEnd)
+		routes.POST("/login", MandorController.LoginMandor)
 	}
 }

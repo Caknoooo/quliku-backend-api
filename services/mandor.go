@@ -5,6 +5,7 @@ import (
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
+	"github.com/Caknoooo/golang-clean_template/helpers"
 	"github.com/Caknoooo/golang-clean_template/repository"
 	"github.com/Caknoooo/golang-clean_template/utils"
 	"github.com/google/uuid"
@@ -19,6 +20,8 @@ const (
 type MandorService interface {
 	RegisterMandorStart(ctx context.Context, mandorDTO dto.MandorCreateDTO) (dto.MandorCreateDTO, error)
 	RegisterMandorEnd(ctx context.Context, mandorDTO dto.MandorNextDTO) (entities.Mandor, error)
+	VerifyLogin(ctx context.Context, mandorDTO dto.MandorLoginDTO) (bool, error)
+	CheckMandorByEmail(ctx context.Context, emailz string) (entities.Mandor, error)
 }
 
 type mandorService struct {
@@ -122,6 +125,32 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 	}
 
 	return ms.mandorRepository.CreateMandor(ctx, mandor)
+}
+
+func (ms *mandorService) VerifyLogin(ctx context.Context, mandorDTO dto.MandorLoginDTO) (bool, error) {
+	email, err := ms.mandorRepository.GetMandorByEmail(ctx, mandorDTO.Email)
+	if err != nil {
+		return false, err
+	}
+
+	if email.Email == "" {
+		return false, nil
+	}
+
+	if checkPassword, err := helpers.CheckPassword(email.Password, []byte(mandorDTO.Password)); !checkPassword {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (ms *mandorService) CheckMandorByEmail(ctx context.Context, emailz string) (entities.Mandor, error) {
+	email, err := ms.mandorRepository.GetMandorByEmail(ctx, emailz)
+	if err != nil {
+		return entities.Mandor{}, err
+	}
+
+	return email, nil
 }
 
 func GenerateFileName(path string, filename string) string {

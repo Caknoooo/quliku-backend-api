@@ -73,7 +73,7 @@ type (
 	}
 
 	MandorLoginDTO struct {
-		Email    string `json:"email" form:"email,omitempty"`
-		Password string `json:"password" form:"password"`
+		Email    string `json:"email" form:"email" binding:"email"`
+		Password string `json:"password" form:"password" binding:"required"`
 	}
 )
