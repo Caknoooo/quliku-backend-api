@@ -1,6 +1,10 @@
 package entities
 
-import "github.com/google/uuid"
+import (
+	"github.com/Caknoooo/golang-clean_template/helpers"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type (
 	Mandor struct {
@@ -37,3 +41,12 @@ type (
 		Timestamp
 	}
 )
+
+func (m *Mandor) BeforeCreate(tx *gorm.DB) error {
+	var err error
+	m.Password, err = helpers.HashPassword(m.Password)
+	if err != nil {
+		return err
+	}
+	return nil
+}
