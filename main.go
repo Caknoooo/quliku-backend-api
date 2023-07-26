@@ -27,12 +27,16 @@ func main() {
 		imageRepository            repository.ImageRepository            = repository.NewImageRepository(db)
 		imageService               services.ImageService                 = services.NewImageService(imageRepository)
 		imageController						controller.ImageController            = controller.NewImageController(imageService, jwtService)
+		mandorRepository 				 repository.MandorRepository           = repository.NewMandorRepository(db)
+		mandorService						 services.MandorService                = services.NewMandorService(mandorRepository)
+		mandorController				 controller.MandorController           = controller.NewMandorController(mandorService, jwtService)
 	)
 
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 	routes.User(server, userController, jwtService)
 	routes.Image(server, imageController)
+	routes.Mandor(server, mandorController)
 
 	if err := migrations.Seeder(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)

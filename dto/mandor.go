@@ -1,15 +1,26 @@
 package dto
 
-import "mime/multipart"
+import (
+	"errors"
+	"mime/multipart"
+)
+
+var (
+	ErrorEmailAlreadyExist    = errors.New("email sudah terdaftar")
+	ErrorUsernameAlreadyExist = errors.New("username sudah terdaftar")
+	ErrFotoProfile            = errors.New("foto profil tidak boleh kosong")
+	ErrFotoSertifikat         = errors.New("foto sertifikat tidak boleh kosong")
+)
 
 type (
 	MandorCreateDTO struct {
-		Email    string `form:"email" json:"email" binding:"required"`
-		Password string `form:"password" json:"password" binding:"required"`
-		Username string `form:"username" json:"username" binding:"required"`
+		Email    string `form:"email" json:"email"`
+		Password string `form:"password" json:"password"`
 	}
 
 	MandorNextDTO struct {
+		Email       string `form:"email" json:"email" binding:"required"`
+		Password    string `form:"password" json:"password" binding:"required"`
 		NoTelp      string `form:"no_telp" json:"no_telp" binding:"required"`
 		NamaLengkap string `form:"nama_lengkap" json:"nama_lengkap" binding:"required"`
 		AsalKota    string `form:"asal_kota" json:"asal_kota" binding:"required"`
@@ -18,6 +29,10 @@ type (
 		Klasifikasi                string `form:"klasifikasi" json:"klasifikasi" binding:"required"`
 		DeskripsiDetailKlasifikasi string `form:"deskripsi_detail_klasifikasi" json:"deskripsi_detail_klasifikasi" binding:"required"`
 		PengalamanKerja            string `form:"pengalaman_kerja" json:"pengalaman_kerja" binding:"required"`
+
+		// Range Kuli
+		RangeKuliAwal  int `form:"range_kuli_awal" json:"range_kuli_awal"`
+		RangeKuliAkhir int `form:"range_kuli_akhir" json:"range_kuli_akhir"`
 
 		// Dokumen
 		FotoProfil     *multipart.FileHeader `form:"foto_profil" json:"foto_profil"`
@@ -33,7 +48,6 @@ type (
 
 	MandorUpdateDTO struct {
 		NamaLengkap *string `form:"nama_lengkap" json:"nama_lengkap"`
-		Username    *string `form:"username" json:"username"`
 		NoTelp      *string `form:"no_telp" json:"no_telp"`
 		Password    *string `form:"password" json:"password"`
 		AsalKota    *string `form:"asal_kota" json:"asal_kota"`
@@ -60,7 +74,6 @@ type (
 
 	MandorLoginDTO struct {
 		Email    string `json:"email" form:"email,omitempty"`
-		Username string `json:"username" form:"username,omitempty"`
 		Password string `json:"password" form:"password"`
 	}
 )

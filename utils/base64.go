@@ -87,7 +87,7 @@ func SaveImage(base64 string, dirfile string, filename string) error {
 		return err
 	}
 
-	err = os.WriteFile(dirfile + "/" +filename, data, 0666)
+	err = os.WriteFile(dirfile + "/" + filename, data, 0666)
 	if err != nil {
 		return err
 	}

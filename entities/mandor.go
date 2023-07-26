@@ -6,11 +6,11 @@ type (
 	Mandor struct {
 		ID          uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
 		NamaLengkap string    `gorm:"type:varchar(100)" json:"nama_lengkap"`
-		Username    string    `gorm:"type:varchar(100)" json:"username"`
 		NoTelp      string    `gorm:"type:varchar(30)" json:"no_telp"`
 		Email       string    `gorm:"type:varchar(100)" json:"email"`
 		Password    string    `gorm:"type:varchar(100)" json:"password"`
 		AsalKota    string    `gorm:"type:varchar(100)" json:"asal_kota"`
+		Status string `gorm:"type:varchar(20);default:Waiting" json:"status"`
 
 		// Kualifikasi Diri
 		Klasifikasi                string `gorm:"type:varchar(100)" json:"klasifikasi"`
