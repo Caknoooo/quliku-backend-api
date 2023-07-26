@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-
+	
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"gorm.io/gorm"
 )
@@ -28,7 +28,7 @@ func (mr *mandorRepository) CreateMandor(ctx context.Context, mandor entities.Ma
 		return entities.Mandor{}, err
 	}
 
-	return entities.Mandor{}, nil
+	return mandor, nil
 }
 
 func (mr *mandorRepository) GetMandorByUsername (ctx context.Context, username string) (entities.Mandor, error) {

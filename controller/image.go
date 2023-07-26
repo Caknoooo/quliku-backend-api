@@ -40,7 +40,7 @@ func (ic *imageController) UploadImage(ctx *gin.Context) {
 		return
 	}
 
-	bytes, err := utils.IsBase64(*file)
+	bytes, err := utils.IsBase64(*file) 
 	if err != nil {
 		response := utils.BuildResponseFailed("Failed to process request", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
@@ -61,7 +61,8 @@ func (ic *imageController) UploadImage(ctx *gin.Context) {
 func (ic *imageController) GetImage(ctx *gin.Context) {
 	// var image string = ""
 	file := ctx.Param("filename")
-	imagePath := fmt.Sprintf("images/%s", file)
+	dirName := ctx.Param("dirname")
+	imagePath := "storage" + "/" + dirName + "/" + file
 
 	_, err := os.Stat(imagePath)
 	if err != nil {

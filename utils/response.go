@@ -21,10 +21,10 @@ func BuildResponseSuccess(message string, data any) Response {
 
 func BuildResponseFailed(message string, err string, data any) Response {
 	res := Response{
-		Status: false,
+		Status:  false,
 		Message: message,
-		Error: err,
-		Data: data,
+		Error:   err,
+		Data:    data,
 	}
 	return res
 }
