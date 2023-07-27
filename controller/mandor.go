@@ -14,6 +14,7 @@ type MandorController interface {
 	RegisterMandorStart(ctx *gin.Context)
 	RegisterMandorEnd(ctx *gin.Context)
 	LoginMandor(ctx *gin.Context)
+	MeMandor(ctx *gin.Context)
 }
 
 type mandorController struct {
@@ -97,5 +98,25 @@ func (mc *mandorController) LoginMandor(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Login Mandor", mandorResponse)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (mc *mandorController) MeMandor(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	ID, err := mc.jwtService.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	mandor, err := mc.mandorService.GetMandorByMandorID(ctx.Request.Context(), ID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Mandor", mandor)
 	ctx.JSON(http.StatusOK, res)
 }

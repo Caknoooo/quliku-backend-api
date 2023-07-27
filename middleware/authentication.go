@@ -34,14 +34,14 @@ func Authenticate(jwtService services.JWTService) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-		userID, err := jwtService.GetUserIDByToken(authHeader)
+		id, err := jwtService.GetIDByToken(authHeader)
 		if err != nil {
 			response := utils.BuildResponseFailed("Gagal Memproses Request", err.Error(), nil)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
 		ctx.Set("token", authHeader)
-		ctx.Set("userID", userID)
+		ctx.Set("id", id)
 		ctx.Next()
 	}
 }

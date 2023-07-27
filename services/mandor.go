@@ -22,6 +22,7 @@ type MandorService interface {
 	RegisterMandorEnd(ctx context.Context, mandorDTO dto.MandorNextDTO) (entities.Mandor, error)
 	VerifyLogin(ctx context.Context, mandorDTO dto.MandorLoginDTO) (bool, error)
 	CheckMandorByEmail(ctx context.Context, emailz string) (entities.Mandor, error)
+	GetMandorByMandorID(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
 }
 
 type mandorService struct {
@@ -142,6 +143,15 @@ func (ms *mandorService) VerifyLogin(ctx context.Context, mandorDTO dto.MandorLo
 	}
 
 	return true, nil
+}
+
+func (ms *mandorService) GetMandorByMandorID(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error) {
+	mandor, err := ms.mandorRepository.GetMandorByMandorID(ctx, mandorID)
+	if err != nil {
+		return entities.Mandor{}, err
+	}
+
+	return mandor, nil
 }
 
 func (ms *mandorService) CheckMandorByEmail(ctx context.Context, emailz string) (entities.Mandor, error) {

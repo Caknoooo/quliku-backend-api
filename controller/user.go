@@ -76,7 +76,7 @@ func (uc *userController) GetAllUser(ctx *gin.Context) {
 
 func (uc *userController) MeUser(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
-	userID, err := uc.jwtService.GetUserIDByToken(token)
+	userID, err := uc.jwtService.GetIDByToken(token)
 	if err != nil {
 		res := utils.BuildResponseFailed("Gagal Memproses Request", "Token Tidak Valid", nil)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
@@ -170,7 +170,7 @@ func (uc *userController) UpdateUser(ctx *gin.Context) {
 	}
 
 	token := ctx.MustGet("token").(string)
-	userID, err := uc.jwtService.GetUserIDByToken(token)
+	userID, err := uc.jwtService.GetIDByToken(token)
 	if err != nil {
 		res := utils.BuildResponseFailed("Gagal Memproses Request", "Token Tidak Valid", nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
@@ -190,7 +190,7 @@ func (uc *userController) UpdateUser(ctx *gin.Context) {
 
 func (uc *userController) DeleteUser(ctx *gin.Context) {
 	token := ctx.MustGet("token").(string)
-	userID, err := uc.jwtService.GetUserIDByToken(token)
+	userID, err := uc.jwtService.GetIDByToken(token)
 	if err != nil {
 		res := utils.BuildResponseFailed("Gagal Memproses Request", "Token Tidak Valid", nil)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
