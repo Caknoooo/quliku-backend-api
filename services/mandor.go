@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
@@ -23,15 +24,20 @@ type MandorService interface {
 	VerifyLogin(ctx context.Context, mandorDTO dto.MandorLoginDTO) (bool, error)
 	CheckMandorByEmail(ctx context.Context, emailz string) (entities.Mandor, error)
 	GetMandorByMandorID(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
+	GetMandorByEmail(ctx context.Context, emailz string) (bool, error)
+	VerifyEmail(ctx context.Context, mandorVerificationDTO dto.MandorVerificationDTO) (bool, error)
+	ResendVerificationCode(ctx context.Context, mandorVerificationDTO dto.ResendMandorVerificationCodeDTO) (bool, error)
 }
 
 type mandorService struct {
 	mandorRepository repository.MandorRepository
+	mandorVerificationRepository repository.MandorVerificationRepository
 }
 
-func NewMandorService(mr repository.MandorRepository) MandorService {
+func NewMandorService(mr repository.MandorRepository, mvr repository.MandorVerificationRepository) MandorService {
 	return &mandorService{
 		mandorRepository: mr,
+		mandorVerificationRepository: mvr,
 	}
 }
 
@@ -125,7 +131,24 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 		},
 	}
 
-	return ms.mandorRepository.CreateMandor(ctx, mandor)
+	mandorData, err := ms.mandorRepository.CreateMandor(ctx, mandor)
+	if err != nil {
+		return entities.Mandor{}, err
+	}
+
+	draftEmail, err := utils.MakeVerificationEmail(mandor.Email)
+	if err != nil {
+		return entities.Mandor{}, err
+	}
+
+	_ = ms.mandorVerificationRepository.Create(mandorData.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+
+	err = utils.SendMail(mandor.Email, draftEmail["subject"], draftEmail["body"])
+	if err != nil {
+		return entities.Mandor{}, err
+	}
+
+	return mandorData, nil
 }
 
 func (ms *mandorService) VerifyLogin(ctx context.Context, mandorDTO dto.MandorLoginDTO) (bool, error) {
@@ -175,6 +198,68 @@ func (ms *mandorService) GetMandorByEmail(ctx context.Context, emailz string) (b
 
 	if email.Email == "" {
 		return false, nil
+	}
+
+	return true, nil
+}
+
+func (ms *mandorService) VerifyEmail(ctx context.Context, mandorVerificationDTO dto.MandorVerificationDTO) (bool, error) {
+	mandorVerification, err := ms.mandorVerificationRepository.Check(mandorVerificationDTO.MandorID)
+	if err != nil {
+		return false, err
+	}
+
+	if mandorVerification.ReceiveCode != mandorVerificationDTO.SendCode {
+		return false, dto.ErrorVerificationCodeNotMatch
+	}
+
+	if mandorVerification.ExpiredAt.Before(time.Now()) {
+		return false, dto.ErrorExpiredVerificationCode
+	}
+
+	if mandorVerification.IsActive {
+		return false, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
+	if err := ms.mandorVerificationRepository.SendCode(mandorVerificationDTO.MandorID, mandorVerificationDTO.SendCode); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (ms *mandorService) ResendVerificationCode(ctx context.Context, mandorVerificationDTO dto.ResendMandorVerificationCodeDTO) (bool, error) {
+	mandorVerification, err := ms.mandorVerificationRepository.Check(mandorVerificationDTO.MandorID)
+	if err != nil {
+		return false, err
+	}
+
+	if mandorVerification.ExpiredAt.After(time.Now()) {
+		return false, dto.ErrorNotExpiredVerificationCode
+	}
+
+	if mandorVerification.IsActive {
+		return false, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
+	mandor, err := ms.mandorRepository.GetMandorByMandorID(ctx, mandorVerificationDTO.MandorID)
+	if err != nil {
+		return false, err
+	}
+
+	draftEmail, err := utils.MakeVerificationEmail(mandor.Email)
+	if err != nil {
+		return false, err
+	}
+
+	_ = ms.mandorVerificationRepository.Delete(mandorVerification.MandorID)
+
+	_ = ms.mandorVerificationRepository.Create(mandorVerification.MandorID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+
+	err = utils.SendMail(mandor.Email, draftEmail["subject"], draftEmail["body"])
+
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil

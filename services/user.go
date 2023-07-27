@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
@@ -61,7 +59,7 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 	}
 
 	// Send verification email
-	draftEmail, err := MakeVerificationEmail(user.Email)
+	draftEmail, err := utils.MakeVerificationEmail(user.Email)
 	if err != nil {
 		return entities.User{}, err
 	}
@@ -75,57 +73,6 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 	}
 
 	return user, nil
-}
-
-func MakeVerificationEmail(receiverEmail string) (map[string]string, error) {
-	token := EncodeToString(6)
-	if token == "" {
-		return nil, dto.ErrorFailedGenerateVerificationCode
-	}
-
-	draftEmail := map[string]string{}
-	draftEmail["subject"] = "Quliku - Email Verification"
-	draftEmail["code"] = token
-	draftEmail["body"] = fmt.Sprintf(`
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>Email Verification - Quliku</title>
-			<style>
-				body {
-					font-family: Arial, sans-serif;
-					line-height: 1.6;
-				}
-				.code-container {
-					text-align: center;
-				}
-				.code {
-					font-size: 30px;
-					padding: 10px;
-					display: inline-block;
-					margin: 0 10px; /* Add margin between each digit */
-				}
-				.note {
-					font-size: 14px;
-					color: #888;
-				}
-			</style>
-		</head>
-		<body>
-			<p>Hi, %s! Thanks for registering an account on Quliku.App.</p>
-			<p>Please verify your email address by entering the code below:</p>	
-			<div class="code-container">
-				<p class="code">%s</p>
-			</div>
-			<p class="note">Please note that this code will expire after 3 minutes.</p>
-			<p>Thanks,<br>Quliku Team</p>
-		</body>
-		</html>
-	`, receiverEmail, token)
-
-	return draftEmail, nil
 }
 
 func (us *userService) VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error) {
@@ -173,7 +120,7 @@ func (us *userService) ResendVerificationCode(ctx context.Context, userVerificat
 	}
 
 	// Send verification email
-	draftEmail, err := MakeVerificationEmail(user.Email)
+	draftEmail, err := utils.MakeVerificationEmail(user.Email)
 	if err != nil {
 		return false, err
 	}
@@ -189,22 +136,6 @@ func (us *userService) ResendVerificationCode(ctx context.Context, userVerificat
 	}
 
 	return true, nil
-}
-
-func EncodeToString(max int) string {
-	var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
-
-	b := make([]byte, max)
-	n, _ := io.ReadAtLeast(rand.Reader, b, max)
-	if n != max {
-		return dto.ErrorFailedGenerateVerificationCode.Error()
-	}
-
-	for i := 0; i < len(b); i++ {
-		b[i] = table[int(b[i]) % len(table)]
-	}
- 
-	return string(b)
 }
 
 func (us *userService) GetAllUser(ctx context.Context) ([]entities.User, error) {

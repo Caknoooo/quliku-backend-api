@@ -14,5 +14,9 @@ func Mandor(route *gin.Engine, MandorController controller.MandorController, jwt
 		routes.POST("/next", MandorController.RegisterMandorEnd)
 		routes.POST("/login", MandorController.LoginMandor)
 		routes.GET("/me", middleware.Authenticate(jwtService), MandorController.MeMandor)
+
+		// Verifikasi akun
+		routes.POST("/send-verification", MandorController.ResendVerificationCode)
+		routes.POST("/verify", MandorController.VerifyEmail)
 	}
 }
