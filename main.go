@@ -36,7 +36,7 @@ func main() {
 	server.Use(middleware.CORSMiddleware())
 	routes.User(server, userController, jwtService)
 	routes.Image(server, imageController)
-	routes.Mandor(server, mandorController)
+	routes.Mandor(server, mandorController, jwtService)
 
 	if err := migrations.Seeder(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)
