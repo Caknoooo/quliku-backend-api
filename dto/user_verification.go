@@ -11,4 +11,8 @@ type (
 	ResendVerificationCode struct {
 		UserID uuid.UUID `gorm:"type:uuid;not null" json:"user_id" binding:"required"`
 	}
+
+	FailedVerificationLoginDTO struct {
+		Email string `json:"email"`
+	}
 )

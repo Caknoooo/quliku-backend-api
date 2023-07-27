@@ -169,7 +169,7 @@ func (mc *mandorController) ResendVerificationCode(ctx *gin.Context) {
 }
 
 func (mc *mandorController) ResendFailedLoginNotVerified(ctx *gin.Context) {
-	var failedLoginDTO dto.FailedVerificationLoginDTO
+	var failedLoginDTO dto.FailedMandorVerificationLoginDTO
 	if err := ctx.ShouldBind(&failedLoginDTO); err != nil {
 		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
