@@ -67,7 +67,7 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 	}
 
 	// Expired verification code in 1 hour
-	_ = us.userVeritificationRepository.Create(user.ID, draftEmail["code"], time.Now().Add(time.Minute * 5))
+	_ = us.userVeritificationRepository.Create(user.ID, draftEmail["code"], time.Now().Add(time.Minute * 1))
 
 	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
@@ -159,8 +159,8 @@ func (us *userService) ResendVerificationCode(ctx context.Context, userVerificat
 		return false, err
 	}
 
-	if userVerification.ExpiredAt.Before(time.Now()) {
-		return false, dto.ErrorExpiredVerificationCode
+	if userVerification.ExpiredAt.After(time.Now()) {
+		return false, dto.ErrorNotExpiredVerificationCode
 	}
 
 	if userVerification.IsActive {
@@ -181,7 +181,7 @@ func (us *userService) ResendVerificationCode(ctx context.Context, userVerificat
 	_ = us.userVeritificationRepository.Delete(userVerification.UserID)
 
 	// Expired verification code in 1 hour
-	_ = us.userVeritificationRepository.Create(userVerification.UserID, draftEmail["code"], time.Now().Add(time.Minute * 5))
+	_ = us.userVeritificationRepository.Create(userVerification.UserID, draftEmail["code"], time.Now().Add(time.Minute * 1))
 
 	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
