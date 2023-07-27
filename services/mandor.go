@@ -27,6 +27,7 @@ type MandorService interface {
 	GetMandorByEmail(ctx context.Context, emailz string) (bool, error)
 	VerifyEmail(ctx context.Context, mandorVerificationDTO dto.MandorVerificationDTO) (bool, error)
 	ResendVerificationCode(ctx context.Context, mandorVerificationDTO dto.ResendMandorVerificationCodeDTO) (bool, error)
+	ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error)
 }
 
 type mandorService struct {
@@ -247,6 +248,10 @@ func (ms *mandorService) ResendVerificationCode(ctx context.Context, mandorVerif
 		return false, err
 	}
 
+	if mandor.IsVerified {
+		return false, dto.ErrorUserAlreadyActive
+	}
+
 	draftEmail, err := utils.MakeVerificationEmail(mandor.Email)
 	if err != nil {
 		return false, err
@@ -262,5 +267,45 @@ func (ms *mandorService) ResendVerificationCode(ctx context.Context, mandorVerif
 		return false, err
 	}
 
+	return true, nil
+}
+
+func (ms *mandorService) ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error) {
+	mail, err := ms.mandorRepository.GetMandorByEmail(ctx, email)
+	if err != nil {
+		return false, err
+	}
+
+	if mail.IsVerified {
+		return false, dto.ErrorUserAlreadyActive
+	}
+
+	mandorVerification, err := ms.mandorVerificationRepository.Check(mail.ID)
+	if err != nil {
+		return false, err
+	}
+
+	if mandorVerification.ExpiredAt.After(time.Now()) {
+		return false, dto.ErrorNotExpiredVerificationCode
+	}
+
+	if mandorVerification.IsActive {
+		return false, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
+	draftEmail, err := utils.MakeVerificationEmail(mail.Email)
+	if err != nil {
+		return false, err
+	}
+
+	_ = ms.mandorVerificationRepository.Delete(mail.ID)
+	
+	_ = ms.mandorVerificationRepository.Create(mail.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+
+	err = utils.SendMail(mail.Email, draftEmail["subject"], draftEmail["body"])
+	if err != nil {
+		return false, err
+	}
+	
 	return true, nil
 }

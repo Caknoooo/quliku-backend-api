@@ -148,7 +148,7 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 
 	if !user.IsVerified {
 		response := utils.BuildResponseFailed("Gagal Login", "Email Belum Terverifikasi", utils.EmptyObj{})
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
 

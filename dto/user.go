@@ -14,7 +14,8 @@ var (
 	ErrorExpiredVerificationCode         = errors.New("expired verification code")
 	ErrorNotExpiredVerificationCode      = errors.New("not expired verification code")
 	ErrorUserVerificationCodeNotActive   = errors.New("user verification code not active")
-	ErrorUserVerificationCodeAlreadyUsed = errors.New("user verification code already used and")
+	ErrorUserVerificationCodeAlreadyUsed = errors.New("user verification code already used")
+	ErrorUserAlreadyActive               = errors.New("user already active")
 )
 
 type (
