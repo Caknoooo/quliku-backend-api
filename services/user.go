@@ -27,6 +27,7 @@ type UserService interface {
 	VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
 	VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error)
 	ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error)
+	ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error)
 }
 
 type userService struct {
@@ -226,4 +227,44 @@ func (us *userService) VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO
 	}
 
 	return false, dto.ErrorUserNotFound
+}
+
+func (us *userService) ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error) {
+	mail, err := us.userRepository.GetUserByEmail(ctx, email)
+	if err != nil {
+		return false, err
+	}
+
+	if mail.IsVerified {
+		return false, dto.ErrorUserAlreadyActive
+	}
+
+	userVerification, err := us.userVeritificationRepository.Check(mail.ID)
+	if err != nil {
+		return false, err
+	}
+
+	if userVerification.ExpiredAt.After(time.Now()) {
+		return false, dto.ErrorNotExpiredVerificationCode
+	}
+
+	if userVerification.IsActive {
+		return false, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
+	draftEmail, err := utils.MakeVerificationEmail(mail.Email)
+	if err != nil {
+		return false, err
+	}
+
+	_ = us.userVeritificationRepository.Delete(mail.ID)
+
+	_ = us.userVeritificationRepository.Create(mail.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+
+	err = utils.SendMail(mail.Email, draftEmail["subject"], draftEmail["body"])
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

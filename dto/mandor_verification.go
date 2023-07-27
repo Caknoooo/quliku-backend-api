@@ -12,7 +12,7 @@ type (
 		MandorID uuid.UUID `gorm:"type:uuid;not null" json:"mandor_id" binding:"required"`
 	}
 
-	FailedVerificationLoginDTO struct {
+	FailedMandorVerificationLoginDTO struct {
 		Email string `json:"email"`
 	}
 )

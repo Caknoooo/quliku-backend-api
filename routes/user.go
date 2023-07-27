@@ -18,7 +18,8 @@ func User(route *gin.Engine, UserController controller.UserController, jwtServic
 		routes.GET("/me", middleware.Authenticate(jwtService), UserController.MeUser)
 
 		// Verifikasi akun
-		routes.POST("/send-verification", UserController.ResendVerificationCode)
+		routes.POST("/send_verification", UserController.ResendVerificationCode)
 		routes.POST("/verify", UserController.VerifyEmail)
+		routes.POST("/failed_login/verify", UserController.ResendFailedLoginNotVerified)
 	}
 }
