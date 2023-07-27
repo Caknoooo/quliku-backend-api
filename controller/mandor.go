@@ -93,6 +93,12 @@ func (mc *mandorController) LoginMandor(ctx *gin.Context) {
 		return
 	}
 
+	if !mandorx.IsVerified {
+		res := utils.BuildResponseFailed("Gagal Login", "Akun Belum Terverifikasi", utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
 	token := mc.jwtService.GenerateToken(mandorx.ID, mandorx.Role)
 	mandorResponse := entities.Authorization{
 		Token: token,
