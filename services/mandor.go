@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
@@ -188,7 +189,10 @@ func (ms *mandorService) CheckMandorByEmail(ctx context.Context, emailz string) 
 }
 
 func GenerateFileName(path string, filename string) string {
-	return LOCALHOST + IMAGE + path + "/" + filename
+	if os.Getenv("APP_ENV") != "Production" {
+		return LOCALHOST + IMAGE + path + "/" + filename
+	}
+	return PRODUCTION + IMAGE + path + "/" + filename
 }
 
 func (ms *mandorService) GetMandorByEmail(ctx context.Context, emailz string) (bool, error) {
