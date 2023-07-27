@@ -43,6 +43,10 @@ func(u *userVerificationRepository) SendCode(UserID uuid.UUID, sendCode string) 
 		return err
 	}
 
+	if err := u.db.Model(&entities.UserVerification{}).Where("user_id = ?", UserID).Update("is_active", true).Error; err != nil {
+		return err
+	}
+
 	if err := u.db.Model(&entities.User{}).Where("id = ?", UserID).Update("is_verified", true).Error; err != nil {
 		return err
 	}

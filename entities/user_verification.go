@@ -11,6 +11,7 @@ type UserVerification struct {
 	ReceiveCode string    `gorm:"type:varchar(7)" json:"receive_code"`
 	SendCode    string    `gorm:"type:varchar(7)" json:"send_code,omitempty"`
 	ExpiredAt   time.Time `gorm:"timestamp with time zone" json:"expired_at"`
+	IsActive    bool      `gorm:"type:boolean;default:false" json:"is_active"`
 
 	UserID uuid.UUID `gorm:"type:uuid;not null" json:"user_id"`
 	User   User      `gorm:"foreignKey:UserID" json:"user"`
