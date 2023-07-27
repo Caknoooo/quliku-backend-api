@@ -12,6 +12,7 @@ var (
 	ErrorFailedGenerateVerificationCode = errors.New("failed generate verification code")
 	ErrorVerificationCodeNotMatch       = errors.New("verification code not match")
 	ErrorExpiredVerificationCode        = errors.New("expired verification code")
+	ErrorUserVerificationCodeAlreadyUsed		= errors.New("user verification code already used")
 )
 
 type (

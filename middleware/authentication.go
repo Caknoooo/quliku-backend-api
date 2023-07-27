@@ -41,7 +41,7 @@ func Authenticate(jwtService services.JWTService) gin.HandlerFunc {
 			return
 		}
 		ctx.Set("token", authHeader)
-		ctx.Set("id", id)
+		ctx.Set("ID", id)
 		ctx.Next()
 	}
 }

@@ -141,6 +141,10 @@ func (us *userService) VerifyEmail(ctx context.Context, userVerificationDTO dto.
 		return false, dto.ErrorExpiredVerificationCode
 	}
 
+	if userVerification.IsActive {
+		return false, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
 	if err := us.userVeritificationRepository.SendCode(userVerification.UserID, userVerificationDTO.SendCode); err != nil {
 		return false, err
 	}
