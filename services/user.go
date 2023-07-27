@@ -67,7 +67,7 @@ func (us *userService) RegisterUser(ctx context.Context, userDTO dto.UserCreateD
 	}
 
 	// Expired verification code in 1 hour
-	_ = us.userVeritificationRepository.Create(user.ID, draftEmail["code"], time.Now().Add(time.Minute * 1))
+	_ = us.userVeritificationRepository.Create(user.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
 
 	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
@@ -119,7 +119,7 @@ func MakeVerificationEmail(receiverEmail string) (map[string]string, error) {
 			<div class="code-container">
 				<p class="code">%s</p>
 			</div>
-			<p class="note">Please note that this code will expire after 5 minutes.</p>
+			<p class="note">Please note that this code will expire after 3 minutes.</p>
 			<p>Thanks,<br>Quliku Team</p>
 		</body>
 		</html>
@@ -181,7 +181,7 @@ func (us *userService) ResendVerificationCode(ctx context.Context, userVerificat
 	_ = us.userVeritificationRepository.Delete(userVerification.UserID)
 
 	// Expired verification code in 1 hour
-	_ = us.userVeritificationRepository.Create(userVerification.UserID, draftEmail["code"], time.Now().Add(time.Minute * 1))
+	_ = us.userVeritificationRepository.Create(userVerification.UserID, draftEmail["code"], time.Now().Add(time.Minute * 3))
 
 	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
