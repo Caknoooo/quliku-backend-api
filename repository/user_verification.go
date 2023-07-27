@@ -10,6 +10,8 @@ import (
 
 type UserVerificationRepository interface {
 	Create(UserID uuid.UUID, receiveCode string, expiredAt time.Time) error
+	Update(receiveCode string, expiredAt time.Time) error
+	Delete(UserID uuid.UUID) error
 	SendCode(UserID uuid.UUID, sendCode string) error
 	Check(UserID uuid.UUID) (entities.UserVerification, error)
 }
@@ -38,12 +40,34 @@ func (u *userVerificationRepository) Create(UserID uuid.UUID, receiveCode string
 	return nil
 }
 
-func(u *userVerificationRepository) SendCode(UserID uuid.UUID, sendCode string) error {
-	if err := u.db.Model(&entities.UserVerification{}).Where("user_id = ?", UserID).Update("send_code", sendCode).Error; err != nil {
+func (u *userVerificationRepository) Update(receiveCode string, expiredAt time.Time) (error) {
+	userVerification := entities.UserVerification{
+		ReceiveCode: receiveCode,
+		ExpiredAt: expiredAt,
+	}
+
+	if err := u.db.Model(&entities.UserVerification{}).Updates(&userVerification).Error; err != nil {
 		return err
 	}
 
-	if err := u.db.Model(&entities.UserVerification{}).Where("user_id = ?", UserID).Update("is_active", true).Error; err != nil {
+	return nil
+}
+
+func (u *userVerificationRepository) Delete(UserID uuid.UUID) (error) {
+	if err := u.db.Where("user_id = ?", UserID).Delete(&entities.UserVerification{}).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+ 
+func(u *userVerificationRepository) SendCode(UserID uuid.UUID, sendCode string) error {
+	userVerification := entities.UserVerification{
+		SendCode: sendCode,
+		IsActive: true,
+	}
+
+	if err := u.db.Model(&entities.UserVerification{}).Where("user_id = ?", UserID).Updates(&userVerification).Error; err != nil {
 		return err
 	}
 

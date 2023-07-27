@@ -28,6 +28,7 @@ type UserService interface {
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 	VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
 	VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error)
+	ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error)
 }
 
 type userService struct {
@@ -146,6 +147,44 @@ func (us *userService) VerifyEmail(ctx context.Context, userVerificationDTO dto.
 	}
 
 	if err := us.userVeritificationRepository.SendCode(userVerification.UserID, userVerificationDTO.SendCode); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (us *userService) ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error) {
+	userVerification, err := us.userVeritificationRepository.Check(userVerificationDTO.UserID)
+	if err != nil {
+		return false, err
+	}
+
+	if userVerification.ExpiredAt.Before(time.Now()) {
+		return false, dto.ErrorExpiredVerificationCode
+	}
+
+	if userVerification.IsActive {
+		return false, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
+	user, err := us.userRepository.GetUserByID(ctx, userVerification.UserID)
+	if err != nil {
+		return false, err
+	}
+
+	// Send verification email
+	draftEmail, err := MakeVerificationEmail(user.Email)
+	if err != nil {
+		return false, err
+	}
+
+	_ = us.userVeritificationRepository.Delete(userVerification.UserID)
+
+	// Expired verification code in 1 hour
+	_ = us.userVeritificationRepository.Create(userVerification.UserID, draftEmail["code"], time.Now().Add(time.Minute * 5))
+
+	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
+	if err != nil {
 		return false, err
 	}
 

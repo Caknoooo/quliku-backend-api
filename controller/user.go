@@ -14,6 +14,7 @@ type UserController interface {
 	RegisterUser(ctx *gin.Context)
 	GetAllUser(ctx *gin.Context)
 	VerifyEmail(ctx *gin.Context)
+	ResendVerificationCode(ctx *gin.Context)
 	MeUser(ctx *gin.Context)
 	LoginUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
@@ -91,6 +92,25 @@ func (uc *userController) MeUser(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mendapatkan User", result)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (uc *userController) ResendVerificationCode(ctx *gin.Context) {
+	var resendVerificationCode dto.ResendVerificationCode
+	if err := ctx.ShouldBind(&resendVerificationCode); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	userVerification, err := uc.userService.ResendVerificationCode(ctx.Request.Context(), resendVerificationCode)
+	if !userVerification {
+		res := utils.BuildResponseFailed("Gagal Mengirim Ulang Kode Verifikasi", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return 
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mengirim Ulang Kode Verifikasi", userVerification)
 	ctx.JSON(http.StatusOK, res)
 }
 
