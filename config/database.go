@@ -45,6 +45,7 @@ func SetUpDatabaseConnection() *gorm.DB{
 		entities.Image{},
 		entities.Mandor{},
 		entities.Bank{},
+		entities.MandorVerification{},
 	); err != nil{
 		fmt.Println(err)
 		panic(err)

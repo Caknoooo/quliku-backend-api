@@ -28,7 +28,8 @@ func main() {
 		imageService               services.ImageService                 = services.NewImageService(imageRepository)
 		imageController						controller.ImageController            = controller.NewImageController(imageService, jwtService)
 		mandorRepository 				 repository.MandorRepository           = repository.NewMandorRepository(db)
-		mandorService						 services.MandorService                = services.NewMandorService(mandorRepository)
+		mandorVerificationRepository = repository.NewMandorVerificationRepository(db)
+		mandorService						 services.MandorService                = services.NewMandorService(mandorRepository, mandorVerificationRepository)
 		mandorController				 controller.MandorController           = controller.NewMandorController(mandorService, jwtService)
 	)
 

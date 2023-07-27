@@ -15,6 +15,8 @@ type MandorController interface {
 	RegisterMandorEnd(ctx *gin.Context)
 	LoginMandor(ctx *gin.Context)
 	MeMandor(ctx *gin.Context)
+	VerifyEmail(ctx *gin.Context)
+	ResendVerificationCode(ctx *gin.Context)
 }
 
 type mandorController struct {
@@ -118,5 +120,43 @@ func (mc *mandorController) MeMandor(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Mandor", mandor)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (mc *mandorController) VerifyEmail(ctx *gin.Context) {
+	var mandorVerificationDTO dto.MandorVerificationDTO
+	if err := ctx.ShouldBind(&mandorVerificationDTO); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	mandorVerification, err := mc.mandorService.VerifyEmail(ctx.Request.Context(), mandorVerificationDTO)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Verifikasi Email", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Verifikasi Email", mandorVerification)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (mc *mandorController) ResendVerificationCode(ctx *gin.Context) {
+	var mandorVerificationDTO dto.ResendMandorVerificationCodeDTO
+	if err := ctx.ShouldBind(&mandorVerificationDTO); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	mandorVerification, err := mc.mandorService.ResendVerificationCode(ctx.Request.Context(), mandorVerificationDTO)
+	if !mandorVerification {
+		res := utils.BuildResponseFailed("Gagal Mengirim Ulang Kode Verifikasi", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mengirim Ulang Kode Verifikasi", mandorVerification)
 	ctx.JSON(http.StatusOK, res)
 }
