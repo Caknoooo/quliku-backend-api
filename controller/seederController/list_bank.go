@@ -1,10 +1,10 @@
-package controller
+package seederController
 
 import (
 	"net/http"
 	"strconv"
 
-	"github.com/Caknoooo/golang-clean_template/services"
+	"github.com/Caknoooo/golang-clean_template/services/seederServices"
 	"github.com/Caknoooo/golang-clean_template/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +16,11 @@ type (
 	}
 
 	listBankController struct {
-		listBankService services.ListBankService
+		listBankService seederServices.ListBankService
 	}
 )
 
-func NewListBankController(listBankService services.ListBankService) ListBankController {
+func NewListBankController(listBankService seederServices.ListBankService) ListBankController {
 	return &listBankController{
 		listBankService: listBankService,
 	}

@@ -1,4 +1,4 @@
-package repository
+package seederRepository
 
 import (
 	"context"
