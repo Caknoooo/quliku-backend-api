@@ -10,6 +10,7 @@ import (
 
 type AdminRepository interface {
 	GetAdminByEmail(ctx context.Context, email string) (entities.Admin, error)
+	GetAdminByID(ctx context.Context, adminID uuid.UUID) (entities.Admin, error)
 }
 
 type adminRepository struct {

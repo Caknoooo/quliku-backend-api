@@ -7,12 +7,14 @@ import (
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"github.com/Caknoooo/golang-clean_template/helpers"
 	"github.com/Caknoooo/golang-clean_template/repository"
+	"github.com/google/uuid"
 )
 
 type AdminService interface {
 	RegisterAdmin()
 	VerifyLogin(ctx context.Context, adminDTO dto.AdminLoginDTO) (bool, error)
 	CheckAdminByEmail(ctx context.Context, email string) (entities.Admin, error)
+	GetAdminByID(ctx context.Context, adminID uuid.UUID) (entities.Admin, error)
 }
 
 type adminService struct {
@@ -31,6 +33,15 @@ func (as *adminService) RegisterAdmin() {
 
 func (as *adminService) CheckAdminByEmail(ctx context.Context, email string) (entities.Admin, error) {
 	admin, err := as.adminRepository.GetAdminByEmail(ctx, email)
+	if err != nil {
+		return entities.Admin{}, err
+	}
+
+	return admin, nil
+}
+
+func (as *adminService) GetAdminByID(ctx context.Context, adminID uuid.UUID) (entities.Admin, error) {
+	admin, err := as.adminRepository.GetAdminByID(ctx, adminID)
 	if err != nil {
 		return entities.Admin{}, err
 	}
