@@ -7,6 +7,7 @@ import (
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"github.com/Caknoooo/golang-clean_template/services"
 	"github.com/Caknoooo/golang-clean_template/utils"
+	"github.com/Caknoooo/golang-clean_template/helpers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -149,6 +150,12 @@ func (uc *userController) LoginUser(ctx *gin.Context) {
 
 	if !user.IsVerified {
 		response := utils.BuildResponseFailed("Gagal Login", "Email Belum Terverifikasi", utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
+		return
+	}
+
+	if user.Role != helpers.USER {
+		response := utils.BuildResponseFailed("Gagal Login", "Role Tidak Sesuai", utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, response)
 		return
 	}
