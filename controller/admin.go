@@ -15,6 +15,7 @@ type (
 	AdminController interface {
 		RegisterAdmin()
 		LoginAdmin(ctx *gin.Context)
+		MeAdmin(ctx *gin.Context)
 	}
 
 	adminController struct {
@@ -74,5 +75,25 @@ func (ac *adminController) LoginAdmin(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Login", adminResponse)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (ac *adminController) MeAdmin(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	adminID, err := ac.jwtService.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	admin, err := ac.adminService.GetAdminByID(ctx.Request.Context(), adminID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Admin", admin)
 	ctx.JSON(http.StatusOK, res)
 }

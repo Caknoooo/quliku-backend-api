@@ -25,7 +25,7 @@ func ListAdminSeeder(db *gorm.DB) error {
 	var listAdmin = []entities.Admin{
 		{
 			ID:         uuid.New(),
-			Nama:       "Admin",
+			Nama:       "Quliku Indonesia",
 			Email:      "Qulikuindonesia@gmail.com",
 			Password:   "Quliku5822",
 			Role:       helpers.ADMIN,
@@ -42,12 +42,12 @@ func ListAdminSeeder(db *gorm.DB) error {
 
 	for _, data := range listAdmin {
 		var admin entities.Admin
-		err := db.Where(&entities.Admin{ID: data.ID}).First(&admin).Error
+		err := db.Where(&entities.Admin{Email: data.Email}).First(&admin).Error
 		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 
-		isData := db.Find(&admin, "id = ?", data.ID).RowsAffected
+		isData := db.Find(&admin, "email = ?", data.Email).RowsAffected
 		if isData == 0 {
 			if err := db.Create(&data).Error; err != nil {
 				return err
