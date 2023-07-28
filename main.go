@@ -10,6 +10,7 @@ import (
 	"github.com/Caknoooo/golang-clean_template/migrations"
 	"github.com/Caknoooo/golang-clean_template/repository"
 	"github.com/Caknoooo/golang-clean_template/routes"
+	"github.com/Caknoooo/golang-clean_template/routes/seeder"
 	"github.com/Caknoooo/golang-clean_template/services"
 
 	"github.com/gin-gonic/gin"
@@ -36,12 +37,22 @@ func main() {
 		adminController 				 controller.AdminController            = controller.NewAdminController(adminService, jwtService)
 	)
 
+	// Seeder
+	var (
+		listBankRepository repository.ListBankRepository = repository.NewListBankRepository(db)
+		listBankService    services.ListBankService      = services.NewListBankService(listBankRepository)
+		listBankController controller.ListBankController = controller.NewListBankController(listBankService)
+	)
+
 	server := gin.Default()
 	server.Use(middleware.CORSMiddleware())
 	routes.User(server, userController, jwtService)
 	routes.Image(server, imageController)
 	routes.Mandor(server, mandorController, jwtService)
 	routes.Admin(server, adminController, jwtService)
+
+	// Seeder Routes
+	seeder.ListBank(server, listBankController)
 
 	if err := migrations.Seeder(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)
