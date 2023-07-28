@@ -6,12 +6,15 @@ import (
 
 	"github.com/Caknoooo/golang-clean_template/config"
 	"github.com/Caknoooo/golang-clean_template/controller"
+	"github.com/Caknoooo/golang-clean_template/controller/seederController"
 	"github.com/Caknoooo/golang-clean_template/middleware"
 	"github.com/Caknoooo/golang-clean_template/migrations"
 	"github.com/Caknoooo/golang-clean_template/repository"
+	"github.com/Caknoooo/golang-clean_template/repository/seederRepository"
 	"github.com/Caknoooo/golang-clean_template/routes"
 	"github.com/Caknoooo/golang-clean_template/routes/seeder"
 	"github.com/Caknoooo/golang-clean_template/services"
+	"github.com/Caknoooo/golang-clean_template/services/seederServices"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -39,9 +42,9 @@ func main() {
 
 	// Seeder
 	var (
-		listBankRepository repository.ListBankRepository = repository.NewListBankRepository(db)
-		listBankService    services.ListBankService      = services.NewListBankService(listBankRepository)
-		listBankController controller.ListBankController = controller.NewListBankController(listBankService)
+		listBankRepository seederRepository.ListBankRepository = seederRepository.NewListBankRepository(db)
+		listBankService    seederServices.ListBankService      = seederServices.NewListBankService(listBankRepository)
+		listBankController seederController.ListBankController = seederController.NewListBankController(listBankService)
 	)
 
 	server := gin.Default()

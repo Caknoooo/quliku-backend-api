@@ -1,10 +1,10 @@
-package services
+package seederServices
 
 import (
 	"context"
 
 	"github.com/Caknoooo/golang-clean_template/entities"
-	"github.com/Caknoooo/golang-clean_template/repository"
+	"github.com/Caknoooo/golang-clean_template/repository/seederRepository"
 )
 
 type (
@@ -14,11 +14,11 @@ type (
 	}
 
 	listBankService struct {
-		listBankRepository repository.ListBankRepository
+		listBankRepository seederRepository.ListBankRepository
 	}
 )
 
-func NewListBankService(listBankRepository repository.ListBankRepository) ListBankService {
+func NewListBankService(listBankRepository seederRepository.ListBankRepository) ListBankService {
 	return &listBankService{
 		listBankRepository: listBankRepository,
 	}
