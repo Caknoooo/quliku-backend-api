@@ -77,7 +77,7 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 	// Range Kuli
 	mandor.RangeKuliAwal = mandorDTO.RangeKuliAwal
 	mandor.RangeKuliAkhir = mandorDTO.RangeKuliAkhir
-	mandor.Role = "mandor"
+	mandor.Role = helpers.MANDOR
 
 	path := "storage/images"
 

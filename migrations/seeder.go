@@ -4,12 +4,55 @@ import (
 	"errors"
 
 	"github.com/Caknoooo/golang-clean_template/entities"
+	"github.com/Caknoooo/golang-clean_template/helpers"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 func Seeder(db *gorm.DB) error {
 	if err := ListUserSeeder(db); err != nil {
 		return err
+	}
+
+	if err := ListAdminSeeder(db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ListAdminSeeder(db *gorm.DB) error {
+	var listAdmin = []entities.Admin{
+		{
+			ID:         uuid.New(),
+			Nama:       "Admin",
+			Email:      "Qulikuindonesia@gmail.com",
+			Password:   "Quliku5822",
+			Role:       helpers.ADMIN,
+			IsVerified: true,
+		},
+	}
+
+	hasTable := db.Migrator().HasTable(&entities.Admin{})
+	if !hasTable {
+		if err := db.Migrator().CreateTable(&entities.Admin{}); err != nil {
+			return err
+		}
+	}
+
+	for _, data := range listAdmin {
+		var admin entities.Admin
+		err := db.Where(&entities.Admin{ID: data.ID}).First(&admin).Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		isData := db.Find(&admin, "id = ?", data.ID).RowsAffected
+		if isData == 0 {
+			if err := db.Create(&data).Error; err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -19,21 +62,21 @@ func ListUserSeeder(db *gorm.DB) error {
 	var listUser = []entities.User{
 		{
 			NamaLengkap: "Admin",
-			Username: 	"admin",
+			Username:    "admin",
 			NoTelp:      "081234567890",
 			Email:       "admin@gmail.com",
 			Password:    "admin123",
-			Role:        "admin",
-			IsVerified: true,
+			Role:        helpers.ADMIN,
+			IsVerified:  true,
 		},
 		{
 			NamaLengkap: "User",
-			Username: 	"user",
+			Username:    "user",
 			NoTelp:      "081234567891",
 			Email:       "user@gmail.com",
 			Password:    "user123",
-			Role:        "user",
-			IsVerified: true,
+			Role:        helpers.USER,
+			IsVerified:  true,
 		},
 	}
 

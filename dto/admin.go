@@ -1,4 +1,10 @@
-package dto 
+package dto
+
+import "errors"
+
+var (
+	ErrEmailNotFound    = errors.New("email not found")
+)
 
 type (
 	AdminCreateDTO struct {

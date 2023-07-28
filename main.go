@@ -31,6 +31,9 @@ func main() {
 		mandorVerificationRepository = repository.NewMandorVerificationRepository(db)
 		mandorService						 services.MandorService                = services.NewMandorService(mandorRepository, mandorVerificationRepository)
 		mandorController				 controller.MandorController           = controller.NewMandorController(mandorService, jwtService)
+		adminRepository 					repository.AdminRepository            = repository.NewAdminRepository(db)
+		adminService 						 services.AdminService                 = services.NewAdminService(adminRepository)
+		adminController 				 controller.AdminController            = controller.NewAdminController(adminService, jwtService)
 	)
 
 	server := gin.Default()
@@ -38,6 +41,7 @@ func main() {
 	routes.User(server, userController, jwtService)
 	routes.Image(server, imageController)
 	routes.Mandor(server, mandorController, jwtService)
+	routes.Admin(server, adminController, jwtService)
 
 	if err := migrations.Seeder(db); err != nil {
 		log.Fatalf("error migration seeder: %v", err)

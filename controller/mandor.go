@@ -5,6 +5,7 @@ import (
 
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
+	"github.com/Caknoooo/golang-clean_template/helpers"
 	"github.com/Caknoooo/golang-clean_template/services"
 	"github.com/Caknoooo/golang-clean_template/utils"
 	"github.com/gin-gonic/gin"
@@ -96,6 +97,12 @@ func (mc *mandorController) LoginMandor(ctx *gin.Context) {
 
 	if !mandorx.IsVerified {
 		res := utils.BuildResponseFailed("Gagal Login", "Akun Belum Terverifikasi", utils.EmptyObj{})
+		ctx.JSON(http.StatusUnauthorized, res)
+		return
+	}
+
+	if mandorx.Role != helpers.MANDOR {
+		res := utils.BuildResponseFailed("Gagal Login", "Role Tidak Sesuai", utils.EmptyObj{})
 		ctx.JSON(http.StatusUnauthorized, res)
 		return
 	}
