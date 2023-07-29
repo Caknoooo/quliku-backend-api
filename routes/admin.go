@@ -12,5 +12,8 @@ func Admin(route *gin.Engine, AdminController controller.AdminController, jwtSer
 	{
 		routes.POST("/login", AdminController.LoginAdmin)
 		routes.GET("/me", middleware.Authenticate(jwtService), AdminController.MeAdmin)
+
+		routes.GET("/get/mandor", middleware.Authenticate(jwtService), AdminController.GetAllMandorForAdmin)
+		
 	}
 }

@@ -3,6 +3,8 @@ package dto
 import (
 	"errors"
 	"mime/multipart"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -75,5 +77,15 @@ type (
 	MandorLoginDTO struct {
 		Email    string `json:"email" form:"email" binding:"email"`
 		Password string `json:"password" form:"password" binding:"required"`
+	}
+
+	GetAllMandorResponse struct {
+		ID          uuid.UUID `json:"id"`
+		NamaLengkap string    `json:"nama_lengkap"`
+		NoTelp      string    `json:"no_telp"`
+
+		Klasifikasi string `json:"klasifikasi"`
+
+		Status string `json:"status"`
 	}
 )

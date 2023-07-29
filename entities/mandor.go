@@ -14,7 +14,7 @@ type (
 		Email       string    `gorm:"type:varchar(100)" json:"email"`
 		Password    string    `gorm:"type:varchar(100)" json:"password"`
 		AsalKota    string    `gorm:"type:varchar(100)" json:"asal_kota"`
-		Status string `gorm:"type:varchar(20);default:Waiting" json:"status"`
+		Status      string    `gorm:"type:varchar(20);default:waiting" json:"status"`
 
 		// Kualifikasi Diri
 		Klasifikasi                string `gorm:"type:varchar(100)" json:"klasifikasi"`

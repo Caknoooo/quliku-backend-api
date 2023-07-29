@@ -14,6 +14,7 @@ import (
 type (
 	AdminController interface {
 		RegisterAdmin()
+		GetAllMandorForAdmin(ctx *gin.Context)
 		LoginAdmin(ctx *gin.Context)
 		MeAdmin(ctx *gin.Context)
 	}
@@ -34,6 +35,39 @@ func NewAdminController(as services.AdminService, jwtService services.JWTService
 func (ac *adminController) RegisterAdmin() {
 
 }
+
+func (ac *adminController) GetAllMandorForAdmin(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	adminID, err := ac.jwtService.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	admin, err := ac.adminService.GetAdminByID(ctx.Request.Context(), adminID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusForbidden, res)
+		return
+	}
+
+	if admin.Role != helpers.ADMIN {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", "Role Tidak Sesuai", utils.EmptyObj{})
+		ctx.JSON(http.StatusForbidden, res)
+		return
+	}
+
+	mandors, err := ac.adminService.GetAllMandorForAdmin(ctx.Request.Context())
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Mandor", mandors)
+	ctx.JSON(http.StatusOK, res)
+} 
 
 func (ac *adminController) LoginAdmin(ctx *gin.Context) {
 	var loginDTO dto.AdminLoginDTO

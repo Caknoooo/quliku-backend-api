@@ -1,7 +1,7 @@
 package helpers
 
 const (
-	ADMIN  = "Admin"
-	MANDOR = "Mandor"
-	USER   = "User"
+	ADMIN  = "admin"
+	MANDOR = "mandor"
+	USER   = "user"
 )
