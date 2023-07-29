@@ -88,4 +88,9 @@ type (
 
 		Status string `json:"status"`
 	}
+
+	ChangeStatusMandorRequest struct {
+		MandorID uuid.UUID `json:"mandor_id"`
+		Status   string    `json:"status"`
+	}
 )

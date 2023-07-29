@@ -14,6 +14,7 @@ type AdminService interface {
 	RegisterAdmin()
 	VerifyLogin(ctx context.Context, adminDTO dto.AdminLoginDTO) (bool, error)
 	CheckAdminByEmail(ctx context.Context, email string) (entities.Admin, error)
+	ChangeStatusMandor(ctx context.Context, mandorDTO dto.ChangeStatusMandorRequest) (bool, error)
 	GetAdminByID(ctx context.Context, adminID uuid.UUID) (entities.Admin, error)
 	GetAllMandorForAdmin(ctx context.Context) ([]dto.GetAllMandorResponse, error)
 	GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
@@ -52,6 +53,14 @@ func (as *adminService) GetAdminByID(ctx context.Context, adminID uuid.UUID) (en
 
 	return admin, nil
 }
+
+func (as *adminService) ChangeStatusMandor(ctx context.Context, mandorDTO dto.ChangeStatusMandorRequest) (bool, error) {
+	if err := as.mandorRepository.ChangeStatus(ctx, mandorDTO.MandorID, mandorDTO.Status); err != nil {
+		return false, err
+	}
+
+	return true, nil
+} 
 
 func (as *adminService) VerifyLogin(ctx context.Context, adminDTO dto.AdminLoginDTO) (bool, error) {
 	admin, err := as.adminRepository.GetAdminByEmail(ctx, adminDTO.Email)

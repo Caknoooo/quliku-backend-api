@@ -17,6 +17,7 @@ type (
 	AdminController interface {
 		RegisterAdmin()
 		GetAllMandorForAdmin(ctx *gin.Context)
+		ChangeStatusMandor(ctx *gin.Context)
 		GetDetailMandor(ctx *gin.Context)
 		LoginAdmin(ctx *gin.Context)
 		MeAdmin(ctx *gin.Context)
@@ -173,5 +174,46 @@ func (ac *adminController) MeAdmin(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Admin", admin)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (ac *adminController) ChangeStatusMandor(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	adminID, err := ac.jwtService.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	admin, err := ac.adminService.GetAdminByID(ctx.Request.Context(), adminID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	if admin.Role != helpers.ADMIN {
+		res := utils.BuildResponseFailed("Gagal Login", "Role Tidak Sesuai", utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	var mandorDTO dto.ChangeStatusMandorRequest
+	if err := ctx.ShouldBind(&mandorDTO); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	data, err := ac.adminService.ChangeStatusMandor(ctx.Request.Context(), mandorDTO);
+
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mengubah Status Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mengubah Status Mandor", data)
 	ctx.JSON(http.StatusOK, res)
 }
