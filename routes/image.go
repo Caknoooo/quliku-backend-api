@@ -9,6 +9,6 @@ func Image(route *gin.Engine, ImageController controller.ImageController) {
 	routes := route.Group("/api/image")
 	{
 		routes.POST("", ImageController.UploadImage)
-		routes.GET("/get/storage/:dirname/:filename", ImageController.GetImage)
+		routes.GET("/get/storage/:path/:dirname/:filename", ImageController.GetImage)
 	}
 }

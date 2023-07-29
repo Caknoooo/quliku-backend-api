@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"os"
 	"time"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
@@ -14,9 +13,11 @@ import (
 )
 
 const (
-	LOCALHOST  = "http://localhost:8888/api/"
-	IMAGE      = "image/get/"
-	PRODUCTION = "https://quliku-backend-api-production.up.railway.app/api/"
+	PATH = "storage/images"
+	PROFILE = "profile"
+	KTP = "ktp"
+	SERTIFIKAT = "sertifikat"
+	PORTOFOLIO = "portofolio"
 )
 
 type MandorService interface {
@@ -32,13 +33,13 @@ type MandorService interface {
 }
 
 type mandorService struct {
-	mandorRepository repository.MandorRepository
+	mandorRepository             repository.MandorRepository
 	mandorVerificationRepository repository.MandorVerificationRepository
 }
 
 func NewMandorService(mr repository.MandorRepository, mvr repository.MandorVerificationRepository) MandorService {
 	return &mandorService{
-		mandorRepository: mr,
+		mandorRepository:             mr,
 		mandorVerificationRepository: mvr,
 	}
 }
@@ -58,12 +59,14 @@ func (ms *mandorService) RegisterMandorStart(ctx context.Context, mandorDTO dto.
 func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.MandorNextDTO) (entities.Mandor, error) {
 	var mandor entities.Mandor
 
+	
 	email, _ := ms.GetMandorByEmail(ctx, mandorDTO.Email)
 	if email {
 		return entities.Mandor{}, dto.ErrorEmailAlreadyExist
 	}
+	
+	mandor.ID = uuid.New()
 	mandor.Email = mandorDTO.Email
-
 	mandor.Password = mandorDTO.Password
 	mandor.NoTelp = mandorDTO.NoTelp
 	mandor.NamaLengkap = mandorDTO.NamaLengkap
@@ -78,9 +81,7 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 	mandor.RangeKuliAwal = mandorDTO.RangeKuliAwal
 	mandor.RangeKuliAkhir = mandorDTO.RangeKuliAkhir
 	mandor.Role = helpers.MANDOR
-
-	path := "storage/images"
-
+	
 	// Unggah Dokumen
 	// Opsional
 	if mandorDTO.FotoProfil != nil {
@@ -89,20 +90,25 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 			return entities.Mandor{}, dto.ErrToBase64
 		}
 
-		_ = utils.SaveImage(fotoProfil, path, mandorDTO.FotoProfil.Filename)
+		fotoProfilSave := mandor.ID.String() + utils.Getextension(mandorDTO.FotoProfil.Filename)
 
-		mandor.FotoProfil = GenerateFileName(path, mandorDTO.FotoProfil.Filename)
+		_ = utils.SaveImage(fotoProfil, PATH, PROFILE, fotoProfilSave)
+
+		mandor.FotoProfil = utils.GenerateFileName(PATH, PROFILE, fotoProfilSave)
 	}
 
+	// Foto Sertifikat
 	if mandorDTO.FotoSertifikat != nil {
 		fotoSertifikat, err := utils.IsBase64(*mandorDTO.FotoSertifikat)
 		if err != nil {
 			return entities.Mandor{}, dto.ErrToBase64
 		}
 
-		_ = utils.SaveImage(fotoSertifikat, path, mandorDTO.FotoSertifikat.Filename)
+		fotoSertifikatSave := mandor.ID.String() + utils.Getextension(mandorDTO.FotoSertifikat.Filename)
 
-		mandor.FotoSertifikat = GenerateFileName(path, mandorDTO.FotoSertifikat.Filename)
+		_ = utils.SaveImage(fotoSertifikat, PATH, SERTIFIKAT, fotoSertifikatSave)
+
+		mandor.FotoSertifikat = utils.GenerateFileName(PATH, SERTIFIKAT, fotoSertifikatSave)
 	}
 
 	fotoKTP, err := utils.IsBase64(*mandorDTO.FotoKTP)
@@ -115,13 +121,19 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 		return entities.Mandor{}, dto.ErrToBase64
 	}
 
-	_ = utils.SaveImage(fotoKTP, path, mandorDTO.FotoKTP.Filename)
+	// KTP
+	fotoKTPSave := mandor.ID.String() + utils.Getextension(mandorDTO.FotoKTP.Filename)
 
-	_ = utils.SaveImage(fotoPortofolio, path, mandorDTO.FotoPortofolio.Filename)
+	_ = utils.SaveImage(fotoKTP, PATH, KTP, fotoKTPSave)
 
-	mandor.FotoKTP = GenerateFileName(path, mandorDTO.FotoKTP.Filename)
+	mandor.FotoKTP = utils.GenerateFileName(PATH, KTP, fotoKTPSave)
 
-	mandor.FotoPortofolio = GenerateFileName(path, mandorDTO.FotoPortofolio.Filename)
+	// Portfolio
+	fotoPortofolioSave := mandor.ID.String() + utils.Getextension(mandorDTO.FotoPortofolio.Filename)
+
+	_ = utils.SaveImage(fotoPortofolio, PATH, PORTOFOLIO, fotoPortofolioSave)
+
+	mandor.FotoPortofolio = utils.GenerateFileName(PATH, PORTOFOLIO, fotoPortofolioSave)
 
 	// Data Bank
 	mandor.Banks = []entities.Bank{
@@ -143,7 +155,7 @@ func (ms *mandorService) RegisterMandorEnd(ctx context.Context, mandorDTO dto.Ma
 		return entities.Mandor{}, err
 	}
 
-	_ = ms.mandorVerificationRepository.Create(mandorData.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+	_ = ms.mandorVerificationRepository.Create(mandorData.ID, draftEmail["code"], time.Now().Add(time.Minute*3))
 
 	err = utils.SendMail(mandor.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
@@ -186,13 +198,6 @@ func (ms *mandorService) CheckMandorByEmail(ctx context.Context, emailz string) 
 	}
 
 	return email, nil
-}
-
-func GenerateFileName(path string, filename string) string {
-	if os.Getenv("APP_ENV") != "Production" {
-		return LOCALHOST + IMAGE + path + "/" + filename
-	}
-	return PRODUCTION + IMAGE + path + "/" + filename
 }
 
 func (ms *mandorService) GetMandorByEmail(ctx context.Context, emailz string) (bool, error) {
@@ -263,7 +268,7 @@ func (ms *mandorService) ResendVerificationCode(ctx context.Context, mandorVerif
 
 	_ = ms.mandorVerificationRepository.Delete(mandorVerification.MandorID)
 
-	_ = ms.mandorVerificationRepository.Create(mandorVerification.MandorID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+	_ = ms.mandorVerificationRepository.Create(mandorVerification.MandorID, draftEmail["code"], time.Now().Add(time.Minute*3))
 
 	err = utils.SendMail(mandor.Email, draftEmail["subject"], draftEmail["body"])
 
@@ -303,13 +308,13 @@ func (ms *mandorService) ResendFailedLoginNotVerified(ctx context.Context, email
 	}
 
 	_ = ms.mandorVerificationRepository.Delete(mail.ID)
-	
-	_ = ms.mandorVerificationRepository.Create(mail.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+
+	_ = ms.mandorVerificationRepository.Create(mail.ID, draftEmail["code"], time.Now().Add(time.Minute*3))
 
 	err = utils.SendMail(mail.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
 		return false, err
 	}
-	
+
 	return true, nil
 }

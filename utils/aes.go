@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -34,7 +35,10 @@ func AESEncrypt(stringToEncrypt string) (encryptedString string, err error) {
 	}
 
 	cipherText := aesGCM.Seal(nonce, nonce, plainText, nil)
-	return fmt.Sprintf("%x", cipherText), nil
+
+	// Use SHA-256 for fixed-length output
+	hash := sha256.Sum256(cipherText)
+	return fmt.Sprintf("%x", hash), nil
 }
 
 func AESDecrypt(encryptedString string) (decryptedString string, err error) {
