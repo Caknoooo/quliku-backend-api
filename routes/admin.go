@@ -14,6 +14,6 @@ func Admin(route *gin.Engine, AdminController controller.AdminController, jwtSer
 		routes.GET("/me", middleware.Authenticate(jwtService), AdminController.MeAdmin)
 
 		routes.GET("/get/mandor", middleware.Authenticate(jwtService), AdminController.GetAllMandorForAdmin)
-		
+		routes.GET("/get/mandor/:id", middleware.Authenticate(jwtService), AdminController.GetDetailMandor)
 	}
 }
