@@ -6,9 +6,16 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Caknoooo/golang-clean_template/dto"
+)
+
+const (
+	LOCALHOST  = "http://localhost:8888/api/"
+	IMAGE      = "image/get/"
+	PRODUCTION = "https://quliku-backend-api-production.up.railway.app/api/"
 )
 
 func DecodeBase64(base64String string) ([]byte, error) {
@@ -76,18 +83,18 @@ func IsBase64(file multipart.FileHeader) (string, error) {
 	return base64Encoding, nil
 }
 
-func SaveImage(base64 string, dirfile string, filename string) error {
+func SaveImage(base64 string, path string, dirname string, filename string) error {
 	data, err := DecodeBase64(base64)
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(dirfile, 0666)
+	err = os.MkdirAll(path + "/" + dirname, 0666)
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(dirfile + "/" + filename, data, 0666)
+	err = os.WriteFile(path + "/" + dirname + "/" + dirname + "_" + filename, data, 0666)
 	if err != nil {
 		return err
 	}
@@ -114,4 +121,15 @@ func GetImage(dirfile string, filename string) (string, error) {
 	}
 
 	return base64, nil
+}
+
+func GenerateFileName(path string, dirname string, filename string) string {
+	if os.Getenv("APP_ENV") != "Production" {
+		return LOCALHOST + IMAGE + path + "/" + dirname + "/" + dirname + "_" + filename
+	}
+	return PRODUCTION + IMAGE + path + "/" + dirname + "/" + dirname + "_" + filename
+}
+
+func Getextension(filename string) string {
+	return filepath.Ext(filename)
 }

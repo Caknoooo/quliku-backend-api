@@ -27,10 +27,10 @@ type (
 		RangeKuliAkhir int `gorm:"type:int" json:"range_kuli_akhir"`
 
 		// Unggah Dokumen
-		FotoProfil     string `gorm:"type:varchar(100)" json:"foto_profil"`
-		FotoKTP        string `gorm:"type:varchar(100)" json:"foto_ktp"`
-		FotoSertifikat string `gorm:"type:varchar(100)" json:"foto_sertifikat"`
-		FotoPortofolio string `gorm:"type:varchar(100)" json:"foto_portofolio"`
+		FotoProfil     string `gorm:"type:varchar(128)" json:"foto_profil"`
+		FotoKTP        string `gorm:"type:varchar(128)" json:"foto_ktp"`
+		FotoSertifikat string `gorm:"type:varchar(128)" json:"foto_sertifikat"`
+		FotoPortofolio string `gorm:"type:varchar(128)" json:"foto_portofolio"`
 
 		// Data Bank
 		Banks []Bank `gorm:"foreignKey:MandorID" json:"banks,omitempty"`
