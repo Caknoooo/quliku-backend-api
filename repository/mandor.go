@@ -13,6 +13,7 @@ type MandorRepository interface {
 	GetMandorByMandorID(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
 	GetMandorByUsername(ctx context.Context, username string) (entities.Mandor, error)
 	GetMandorByEmail(ctx context.Context, email string) (entities.Mandor, error)
+	GetAllMandor(ctx context.Context) ([]entities.Mandor, error)
 }
 
 type mandorRepository struct {
@@ -31,6 +32,16 @@ func (mr *mandorRepository) CreateMandor(ctx context.Context, mandor entities.Ma
 	}
 
 	return mandor, nil
+}
+
+func (mr *mandorRepository) GetAllMandor(ctx context.Context) ([]entities.Mandor, error) {
+	var mandors []entities.Mandor
+
+	if err := mr.db.Find(&mandors).Error; err != nil {
+		return []entities.Mandor{}, err
+	}
+
+	return mandors, nil
 }
 
 func (mr *mandorRepository) GetMandorByMandorID(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error) {

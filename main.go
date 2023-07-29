@@ -36,7 +36,7 @@ func main() {
 		mandorService						 services.MandorService                = services.NewMandorService(mandorRepository, mandorVerificationRepository)
 		mandorController				 controller.MandorController           = controller.NewMandorController(mandorService, jwtService)
 		adminRepository 					repository.AdminRepository            = repository.NewAdminRepository(db)
-		adminService 						 services.AdminService                 = services.NewAdminService(adminRepository)
+		adminService 						 services.AdminService                 = services.NewAdminService(adminRepository, mandorRepository)
 		adminController 				 controller.AdminController            = controller.NewAdminController(adminService, jwtService)
 	)
 

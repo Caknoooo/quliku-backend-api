@@ -18,6 +18,11 @@ const (
 	KTP = "ktp"
 	SERTIFIKAT = "sertifikat"
 	PORTOFOLIO = "portofolio"
+
+	// Status Mandor
+	REJECTED = "rejected"
+	WAITING = "waiting"
+	ACCEPTED = "accepted"
 )
 
 type MandorService interface {

@@ -2,6 +2,7 @@ package code
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"github.com/Caknoooo/golang-clean_template/helpers"
@@ -40,6 +41,7 @@ func ListAdminSeeder(db *gorm.DB) error {
 			if err := db.Create(&data).Error; err != nil {
 				return err
 			}
+			fmt.Println("Admin Created")
 		}
 	}
 

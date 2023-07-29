@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrEmailNotFound    = errors.New("email not found")
+	ErrNotAdminID			 = errors.New("your role is not admin")
 )
 
 type (
