@@ -2,19 +2,22 @@ package controller
 
 import (
 	"net/http"
-	"github.com/gin-gonic/gin"
 
-	"github.com/Caknoooo/golang-clean_template/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+
 	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
-	"github.com/Caknoooo/golang-clean_template/services"
 	"github.com/Caknoooo/golang-clean_template/helpers"
+	"github.com/Caknoooo/golang-clean_template/services"
+	"github.com/Caknoooo/golang-clean_template/utils"
 )
 
 type (
 	AdminController interface {
 		RegisterAdmin()
 		GetAllMandorForAdmin(ctx *gin.Context)
+		GetDetailMandor(ctx *gin.Context)
 		LoginAdmin(ctx *gin.Context)
 		MeAdmin(ctx *gin.Context)
 	}
@@ -68,6 +71,47 @@ func (ac *adminController) GetAllMandorForAdmin(ctx *gin.Context) {
 	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Mandor", mandors)
 	ctx.JSON(http.StatusOK, res)
 } 
+
+func (ac *adminController) GetDetailMandor(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	adminID, err := ac.jwtService.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	admin, err := ac.adminService.GetAdminByID(ctx.Request.Context(), adminID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusForbidden, res)
+		return
+	}
+
+	if admin.Role != helpers.ADMIN {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Admin", "Role Tidak Sesuai", utils.EmptyObj{})
+		ctx.JSON(http.StatusForbidden, res)
+		return
+	}
+
+	id := ctx.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	mandor, err := ac.adminService.GetDetailMandor(ctx.Request.Context(), uuid)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Mandor", mandor)
+	ctx.JSON(http.StatusOK, res)
+}
 
 func (ac *adminController) LoginAdmin(ctx *gin.Context) {
 	var loginDTO dto.AdminLoginDTO

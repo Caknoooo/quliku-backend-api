@@ -16,6 +16,7 @@ type AdminService interface {
 	CheckAdminByEmail(ctx context.Context, email string) (entities.Admin, error)
 	GetAdminByID(ctx context.Context, adminID uuid.UUID) (entities.Admin, error)
 	GetAllMandorForAdmin(ctx context.Context) ([]dto.GetAllMandorResponse, error)
+	GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
 }
 
 type adminService struct {
@@ -87,4 +88,13 @@ func (as *adminService) GetAllMandorForAdmin(ctx context.Context) ([]dto.GetAllM
 	}
 
 	return mandorResponses, nil
+}
+
+func (as *adminService) GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error) {
+	mandor, err := as.mandorRepository.GetDetailMandor(ctx, mandorID)
+	if err != nil {
+		return entities.Mandor{}, err
+	}
+
+	return mandor, nil
 }

@@ -14,6 +14,7 @@ type MandorRepository interface {
 	GetMandorByUsername(ctx context.Context, username string) (entities.Mandor, error)
 	GetMandorByEmail(ctx context.Context, email string) (entities.Mandor, error)
 	GetAllMandor(ctx context.Context) ([]entities.Mandor, error)
+	GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
 }
 
 type mandorRepository struct {
@@ -42,6 +43,16 @@ func (mr *mandorRepository) GetAllMandor(ctx context.Context) ([]entities.Mandor
 	}
 
 	return mandors, nil
+}
+
+func (mr *mandorRepository) GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error) {
+	var mandor entities.Mandor
+
+	if err := mr.db.Where("id = ?", mandorID).Take(&mandor).Error; err != nil {
+		return entities.Mandor{}, err
+	}
+
+	return mandor, nil
 }
 
 func (mr *mandorRepository) GetMandorByMandorID(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error) {
