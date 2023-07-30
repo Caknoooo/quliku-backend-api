@@ -55,7 +55,7 @@ func (as *adminService) GetAdminByID(ctx context.Context, adminID uuid.UUID) (en
 }
 
 func (as *adminService) ChangeStatusMandor(ctx context.Context, mandorDTO dto.ChangeStatusMandorRequest) (bool, error) {
-	if err := as.mandorRepository.ChangeStatus(ctx, mandorDTO.MandorID, mandorDTO.Status); err != nil {
+	if err := as.mandorRepository.ChangeStatus(ctx, mandorDTO); err != nil {
 		return false, err
 	}
 

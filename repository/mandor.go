@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/Caknoooo/golang-clean_template/dto"
 	"github.com/Caknoooo/golang-clean_template/entities"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -15,7 +16,7 @@ type MandorRepository interface {
 	GetMandorByEmail(ctx context.Context, email string) (entities.Mandor, error)
 	GetAllMandor(ctx context.Context) ([]entities.Mandor, error)
 	GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
-	ChangeStatus(ctx context.Context, mandorID uuid.UUID, status string) (error)
+	ChangeStatus(ctx context.Context, mandorDTO dto.ChangeStatusMandorRequest) (error)
 }
 
 type mandorRepository struct {
@@ -56,14 +57,14 @@ func (mr *mandorRepository) GetDetailMandor(ctx context.Context, mandorID uuid.U
 	return mandor, nil
 }
 
-func (mr *mandorRepository) ChangeStatus(ctx context.Context, mandorID uuid.UUID, status string) (error) {
+func (mr *mandorRepository) ChangeStatus(ctx context.Context, mandorDTO dto.ChangeStatusMandorRequest) (error) {
 	var mandor entities.Mandor
-
-	if err := mr.db.Where("id = ?", mandorID).Take(&mandor).Error; err != nil {
+	if err := mr.db.Where("id = ?", mandorDTO.MandorID).Take(&mandor).Error; err != nil {
 		return err
 	}
 
-	mandor.Status = status
+	mandor.Status = mandorDTO.Status
+	mandor.IsVerifiedAdmin = true
 	if err := mr.db.Save(&mandor).Error; err != nil {
 		return err
 	}
