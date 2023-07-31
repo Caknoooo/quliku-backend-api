@@ -14,10 +14,11 @@ func Mandor(route *gin.Engine, MandorController controller.MandorController, jwt
 		routes.POST("/next", MandorController.RegisterMandorEnd)
 		routes.POST("/login", MandorController.LoginMandor)
 		routes.GET("/me", middleware.Authenticate(jwtService), MandorController.MeMandor)
+		routes.PUT("/update", middleware.Authenticate(jwtService), MandorController.UpdateMandor)
 
 		// Verifikasi akun
 		routes.POST("/send_verification", MandorController.ResendVerificationCode)
 		routes.POST("/verify", MandorController.VerifyEmail)
-		routes.POST("/failed_login/verify",MandorController.ResendFailedLoginNotVerified)
+		routes.POST("/failed_login/verify", MandorController.ResendFailedLoginNotVerified)
 	}
 }
