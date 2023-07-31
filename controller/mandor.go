@@ -16,6 +16,7 @@ type MandorController interface {
 	RegisterMandorEnd(ctx *gin.Context)
 	LoginMandor(ctx *gin.Context)
 	MeMandor(ctx *gin.Context)
+	UpdateMandor(ctx *gin.Context)
 	VerifyEmail(ctx *gin.Context)
 	ResendVerificationCode(ctx *gin.Context)
 	ResendFailedLoginNotVerified(ctx *gin.Context)
@@ -191,5 +192,33 @@ func (mc *mandorController) ResendFailedLoginNotVerified(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mengirim Ulang Kode Verifikasi", failedLogin)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (mc *mandorController) UpdateMandor(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	ID, err := mc.jwtService.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	var mandorUpdateDTO dto.MandorUpdateDTO
+	if err := ctx.ShouldBind(&mandorUpdateDTO); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	mandorUpdateDTO.ID = ID
+	data, err := mc.mandorService.UpdateMandor(ctx.Request.Context(), mandorUpdateDTO)
+	if err != nil{
+		res := utils.BuildResponseFailed("Gagal Update Mandor", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Update Mandor", data)
 	ctx.JSON(http.StatusOK, res)
 }

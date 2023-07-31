@@ -9,17 +9,17 @@ import (
 type (
 	Mandor struct {
 		ID          uuid.UUID `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
-		NamaLengkap string    `gorm:"type:varchar(100)" json:"nama_lengkap"`
-		NoTelp      string    `gorm:"type:varchar(30)" json:"no_telp"`
-		Email       string    `gorm:"type:varchar(100)" json:"email"`
-		Password    string    `gorm:"type:varchar(100)" json:"password"`
-		AsalKota    string    `gorm:"type:varchar(100)" json:"asal_kota"`
-		Status      string    `gorm:"type:varchar(20);default:waiting" json:"status"`
+		NamaLengkap string    `gorm:"type:varchar(64)" json:"nama_lengkap"`
+		NoTelp      string    `gorm:"type:varchar(32)" json:"no_telp"`
+		Email       string    `gorm:"type:varchar(32)" json:"email"`
+		Password    string    `gorm:"type:varchar(128)" json:"password"`
+		AsalKota    string    `gorm:"type:varchar(32)" json:"asal_kota"`
+		Status      string    `gorm:"type:varchar(32);default:waiting" json:"status"`
 
 		// Kualifikasi Diri
-		Klasifikasi                string `gorm:"type:varchar(100)" json:"klasifikasi"`
-		DeskripsiDetailKlasifikasi string `gorm:"type:varchar(100)" json:"deskripsi_detail_klasifikasi"`
-		PengalamanKerja            string `gorm:"type:varchar(100)" json:"pengalaman_kerja"`
+		Klasifikasi                string `gorm:"type:varchar(32)" json:"klasifikasi"`
+		DeskripsiDetailKlasifikasi string `gorm:"type:varchar(128)" json:"deskripsi_detail_klasifikasi"`
+		PengalamanKerja            int    `gorm:"type:int" json:"pengalaman_kerja"`
 		HargaMandor                int    `gorm:"type:int" json:"harga_mandor,omitempty"`
 
 		// Range Kuli
@@ -35,7 +35,7 @@ type (
 		// Data Bank
 		Banks []Bank `gorm:"foreignKey:MandorID" json:"banks,omitempty"`
 
-		Role            string `gorm:"type:varchar(100)" json:"role"`
+		Role            string `gorm:"type:varchar(128)" json:"role"`
 		IsVerified      bool   `gorm:"type:boolean;default:false" json:"is_verified"`
 		IsVerifiedAdmin bool   `gorm:"type:boolean;default:false" json:"is_verified_admin"`
 

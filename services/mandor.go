@@ -35,6 +35,7 @@ type MandorService interface {
 	VerifyEmail(ctx context.Context, mandorVerificationDTO dto.MandorVerificationDTO) (bool, error)
 	ResendVerificationCode(ctx context.Context, mandorVerificationDTO dto.ResendMandorVerificationCodeDTO) (bool, error)
 	ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error)
+	UpdateMandor(ctx context.Context, mandorDTO dto.MandorUpdateDTO) (dto.MandorUpdateDTOResponse, error)
 }
 
 type mandorService struct {
@@ -322,4 +323,96 @@ func (ms *mandorService) ResendFailedLoginNotVerified(ctx context.Context, email
 	}
 
 	return true, nil
+}
+
+func (ms *mandorService) UpdateMandor(ctx context.Context, mandorDTO dto.MandorUpdateDTO) (dto.MandorUpdateDTOResponse, error) {
+	mandor := entities.Mandor{}
+	mandor.ID = mandorDTO.ID
+	if mandorDTO.NamaLengkap != nil {
+		mandor.NamaLengkap = *mandorDTO.NamaLengkap
+	}
+	if mandorDTO.NoTelp != nil {
+		mandor.NoTelp = *mandorDTO.NoTelp
+	}
+	if mandorDTO.AsalKota != nil {
+		mandor.AsalKota = *mandorDTO.AsalKota
+	}
+	if mandorDTO.Klasifikasi != nil {
+		mandor.Klasifikasi = *mandorDTO.Klasifikasi
+	}
+	if mandorDTO.PengalamanKerja != nil {
+		mandor.PengalamanKerja = *mandorDTO.PengalamanKerja
+	}
+	if mandorDTO.DeskripsiDetailKlasifikasi != nil {
+		mandor.DeskripsiDetailKlasifikasi = *mandorDTO.DeskripsiDetailKlasifikasi
+	}
+	if mandorDTO.HargaMandor != nil {
+		mandor.HargaMandor = *mandorDTO.HargaMandor
+	}
+	if mandorDTO.RangeKuliAwal != nil {
+		mandor.RangeKuliAwal = *mandorDTO.RangeKuliAwal
+	}
+	if mandorDTO.RangeKuliAkhir != nil {
+		mandor.RangeKuliAkhir = *mandorDTO.RangeKuliAkhir
+	}
+
+	// Update the bank information if provided
+	if mandorDTO.NamaBank != nil || mandorDTO.NoRekening != nil || mandorDTO.AtasNama != nil {
+		mandor.Banks = []entities.Bank{
+			{
+				NamaBank:   *mandorDTO.NamaBank,
+				NoRekening: *mandorDTO.NoRekening,
+				AtasNama:   *mandorDTO.AtasNama,
+			},
+		}
+	}
+
+	if mandorDTO.FotoProfil != nil {
+		fotoProfil, err := utils.IsBase64(*mandorDTO.FotoProfil)
+		if err != nil {
+			return dto.MandorUpdateDTOResponse{}, dto.ErrBase64Format
+		}
+
+		fotoProfilSave := mandor.ID.String() + utils.Getextension(mandorDTO.FotoProfil.Filename)
+
+		_ = utils.SaveImage(fotoProfil, PATH, PROFILE, fotoProfilSave)
+
+		mandor.FotoProfil = utils.GenerateFileName(PATH, PROFILE, fotoProfilSave)
+	}
+
+	if mandorDTO.FotoPortofolio != nil {
+		fotoSertifikat, err := utils.IsBase64(*mandorDTO.FotoPortofolio)
+		if err != nil {
+			return dto.MandorUpdateDTOResponse{}, dto.ErrBase64Format
+		}
+
+		fotoSertifikatSave := mandor.ID.String() + utils.Getextension(mandorDTO.FotoPortofolio.Filename)
+
+		_ = utils.SaveImage(fotoSertifikat, PATH, SERTIFIKAT, fotoSertifikatSave)
+
+		mandor.FotoSertifikat = utils.GenerateFileName(PATH, SERTIFIKAT, fotoSertifikatSave)
+	}
+
+	mandor, err := ms.mandorRepository.UpdateMandor(ctx, mandor)
+	if err != nil {
+		return dto.MandorUpdateDTOResponse{}, err
+	}
+
+	return dto.MandorUpdateDTOResponse{
+		ID: mandor.ID,
+		NamaLengkap: mandor.NamaLengkap,
+		NoTelp: mandor.NoTelp,
+		AsalKota: mandor.AsalKota,
+		Klasifikasi: mandor.Klasifikasi,
+		DeskripsiDetailKlasifikasi: mandor.DeskripsiDetailKlasifikasi,
+		PengalamanKerja: mandor.PengalamanKerja,
+		HargaMandor: mandor.HargaMandor,
+		RangeKuliAwal: mandor.RangeKuliAwal,
+		RangeKuliAkhir: mandor.RangeKuliAkhir,
+		FotoProfil: mandor.FotoProfil,
+		FotoPortofolio: mandor.FotoPortofolio,
+		NamaBank: mandor.Banks[0].NamaBank,
+		NoRekening: mandor.Banks[0].NoRekening,
+		AtasNama: mandor.Banks[0].AtasNama,
+	}, nil
 }

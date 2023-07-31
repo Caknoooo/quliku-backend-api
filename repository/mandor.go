@@ -17,6 +17,7 @@ type MandorRepository interface {
 	GetAllMandor(ctx context.Context) ([]entities.Mandor, error)
 	GetDetailMandor(ctx context.Context, mandorID uuid.UUID) (entities.Mandor, error)
 	ChangeStatus(ctx context.Context, mandorDTO dto.ChangeStatusMandorRequest) (error)
+	UpdateMandor(ctx context.Context, mandor entities.Mandor) (entities.Mandor, error)
 }
 
 type mandorRepository struct {
@@ -98,3 +99,11 @@ func (mr *mandorRepository) GetMandorByEmail(ctx context.Context, email string) 
 
 	return mandor, nil
 }
+
+func (mr *mandorRepository) UpdateMandor(ctx context.Context, mandor entities.Mandor) (entities.Mandor, error) {
+	if err := mr.db.Updates(&mandor).Error; err != nil {
+		return entities.Mandor{}, err
+	}
+
+	return mandor, nil
+} 

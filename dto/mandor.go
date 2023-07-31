@@ -30,7 +30,7 @@ type (
 		// Kualifikasi Diri
 		Klasifikasi                string `form:"klasifikasi" json:"klasifikasi" binding:"required"`
 		DeskripsiDetailKlasifikasi string `form:"deskripsi_detail_klasifikasi" json:"deskripsi_detail_klasifikasi" binding:"required"`
-		PengalamanKerja            string `form:"pengalaman_kerja" json:"pengalaman_kerja" binding:"required"`
+		PengalamanKerja            int    `form:"pengalaman_kerja" json:"pengalaman_kerja" binding:"required"`
 
 		// Range Kuli
 		RangeKuliAwal  int `form:"range_kuli_awal" json:"range_kuli_awal"`
@@ -49,15 +49,15 @@ type (
 	}
 
 	MandorUpdateDTO struct {
-		NamaLengkap *string `form:"nama_lengkap" json:"nama_lengkap"`
-		NoTelp      *string `form:"no_telp" json:"no_telp"`
-		Password    *string `form:"password" json:"password"`
-		AsalKota    *string `form:"asal_kota" json:"asal_kota"`
+		ID          uuid.UUID `form:"id" json:"id" `
+		NamaLengkap *string   `form:"nama_lengkap" json:"nama_lengkap"`
+		NoTelp      *string   `form:"no_telp" json:"no_telp"`
+		AsalKota    *string   `form:"asal_kota" json:"asal_kota"`
 
 		// Kualifikasi Diri
 		Klasifikasi                *string `form:"klasifikasi" json:"klasifikasi"`
 		DeskripsiDetailKlasifikasi *string `form:"deskripsi_detail_klasifikasi" json:"deskripsi_detail_klasifikasi"`
-		PengalamanKerja            *string `form:"pengalaman_kerja" json:"pengalaman_kerja"`
+		PengalamanKerja            *int    `form:"pengalaman_kerja" json:"pengalaman_kerja"`
 		HargaMandor                *int    `form:"harga_mandor" json:"harga_mandor"`
 
 		// Range Kuli
@@ -72,6 +72,32 @@ type (
 		NamaBank   *string `form:"nama_bank" json:"nama_bank"`
 		NoRekening *string `form:"no_rekening" json:"no_rekening"`
 		AtasNama   *string `form:"atas_nama" json:"atas_nama"`
+	}
+
+	MandorUpdateDTOResponse struct {
+		ID          uuid.UUID `json:"id"`
+		NamaLengkap string    `json:"nama_lengkap"`
+		NoTelp      string    `json:"no_telp"`
+		AsalKota    string    `json:"asal_kota"`
+
+		// Kualifikasi Diri
+		Klasifikasi                string `json:"klasifikasi"`
+		DeskripsiDetailKlasifikasi string `json:"deskripsi_detail_klasifikasi"`
+		PengalamanKerja            int    `json:"pengalaman_kerja"`
+		HargaMandor                int    `json:"harga_mandor"`
+
+		// Range Kuli
+		RangeKuliAwal  int `json:"range_kuli_awal"`
+		RangeKuliAkhir int `json:"range_kuli_akhir"`
+
+		// Unggah Dokumen
+		FotoProfil     string `json:"foto_profil"`
+		FotoPortofolio string `json:"foto_portofolio"`
+
+		// Data Bank
+		NamaBank   string `json:"nama_bank"`
+		NoRekening string `json:"no_rekening"`
+		AtasNama   string `json:"atas_nama"`
 	}
 
 	MandorLoginDTO struct {
