@@ -35,6 +35,9 @@ type (
 		// Data Bank
 		Banks []Bank `gorm:"foreignKey:MandorID" json:"banks,omitempty"`
 
+		Rating       float64        `gorm:"type:float;default:0" json:"rating,omitempty"`
+		MandorRating []MandorRating `gorm:"foreignKey:MandorID" json:"mandor_rating,omitempty"`
+
 		Role            string `gorm:"type:varchar(128)" json:"role"`
 		IsVerified      bool   `gorm:"type:boolean;default:false" json:"is_verified"`
 		IsVerifiedAdmin bool   `gorm:"type:boolean;default:false" json:"is_verified_admin"`
