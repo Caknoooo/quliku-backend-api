@@ -15,6 +15,7 @@ type UserController interface {
 	RegisterUser(ctx *gin.Context)
 	GetAllUser(ctx *gin.Context)
 	VerifyEmail(ctx *gin.Context)
+	MakeVerificationForgotPassword(ctx *gin.Context)
 	ResendVerificationCode(ctx *gin.Context)
 	ResendFailedLoginNotVerified(ctx *gin.Context)
 	MeUser(ctx *gin.Context)
@@ -251,5 +252,24 @@ func (uc *userController) ResendFailedLoginNotVerified(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mengirim Ulang Kode Verifikasi", userVerification)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func(uc *userController) MakeVerificationForgotPassword(ctx *gin.Context) {
+	var forgotPasswordReq dto.ForgotPasswordRequest
+	if err := ctx.ShouldBind(&forgotPasswordReq); err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Request Dari Body", err.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	data := uc.userService.MakeVerificationForgotPassword(ctx.Request.Context(), forgotPasswordReq)
+	if data != nil {
+		res := utils.BuildResponseFailed("Gagal Mengirim Email", data.Error(), utils.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mengirim Email", data)
 	ctx.JSON(http.StatusOK, res)
 }

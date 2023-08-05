@@ -55,4 +55,12 @@ type (
 		Email      string `json:"email"`
 		IsVerified bool   `json:"is_verified"`
 	}
+
+	ForgotPasswordRequest struct {
+		Email string `json:"email" form:"email"`
+	}
+
+	ForgotPasswordResponse struct {
+		ID string `json:"id" form:"id"`
+	}
 )
