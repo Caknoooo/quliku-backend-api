@@ -27,8 +27,10 @@ type UserService interface {
 	VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
 	VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error)
 	ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error)
-	MakeVerificationForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) (error)
+	MakeVerificationForgotPassword(ctx context.Context, req dto.MakeVerificationForgotPasswordRequest) (dto.MakeVerificationForgotPasswordResponse, error)
 	ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error)
+	KodeOTPForgotPassword(ctx context.Context, req dto.KodeOTPForgotPasswordRequest) (dto.KodeOTPForgotPasswordResponse, error)
+	SendForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) (bool, error)
 }
 
 type userService struct {
@@ -102,29 +104,32 @@ func (us *userService) VerifyEmail(ctx context.Context, userVerificationDTO dto.
 	return true, nil
 }
 
-func (us *userService) MakeVerificationForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) (error) {
+func (us *userService) MakeVerificationForgotPassword(ctx context.Context, req dto.MakeVerificationForgotPasswordRequest) (dto.MakeVerificationForgotPasswordResponse, error) {
 	user, err := us.userRepository.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return err
+		return dto.MakeVerificationForgotPasswordResponse{}, err
 	}
 
 	if user.Email == "" {
-		return dto.ErrorUserNotFound
+		return dto.MakeVerificationForgotPasswordResponse{}, dto.ErrorUserNotFound
 	}
 
 	draftEmail, err := utils.MakeForgotPasswordEmail(user.Email)
 	if err != nil {
-		return err
+		return dto.MakeVerificationForgotPasswordResponse{}, err
 	}
 
 	_ = us.userVeritificationRepository.Create(user.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
 
 	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
-		return err
+		return dto.MakeVerificationForgotPasswordResponse{}, err
 	}
 
-	return nil
+	return dto.MakeVerificationForgotPasswordResponse{
+		ID: user.ID.String(),
+		Email: user.Email,
+	}, nil
 }
 
 func (us *userService) ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error) {
@@ -289,6 +294,69 @@ func (us *userService) ResendFailedLoginNotVerified(ctx context.Context, email s
 
 	err = utils.SendMail(mail.Email, draftEmail["subject"], draftEmail["body"])
 	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (us *userService) KodeOTPForgotPassword(ctx context.Context, req dto.KodeOTPForgotPasswordRequest) (dto.KodeOTPForgotPasswordResponse, error) {
+	user, err := us.userRepository.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return dto.KodeOTPForgotPasswordResponse{}, err
+	}
+
+	if user.Email == "" {
+		return dto.KodeOTPForgotPasswordResponse{}, dto.ErrorUserNotFound
+	}
+
+	userVerification, err := us.userVeritificationRepository.Check(user.ID)
+	if err != nil {
+		return dto.KodeOTPForgotPasswordResponse{}, err
+	}
+
+	if userVerification.ExpiredAt.Before(time.Now()) {
+		return dto.KodeOTPForgotPasswordResponse{}, dto.ErrorNotExpiredVerificationCode
+	}
+
+	if userVerification.IsActive {
+		return dto.KodeOTPForgotPasswordResponse{}, dto.ErrorUserVerificationCodeAlreadyUsed
+	}
+
+	if userVerification.ReceiveCode != req.SendCode {
+		return dto.KodeOTPForgotPasswordResponse{}, dto.ErrorVerificationCodeNotMatch
+	}
+
+	if err := us.userVeritificationRepository.SendCode(userVerification.UserID, req.SendCode); err != nil {
+		return dto.KodeOTPForgotPasswordResponse{}, err
+	}
+
+	return dto.KodeOTPForgotPasswordResponse{
+		ID: userVerification.UserID.String(),
+	}, nil
+}
+
+func (us *userService) SendForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) (bool, error) {
+	user, err := us.userRepository.GetUserByID(ctx, uuid.MustParse(req.ID))
+	if err != nil {
+		return false, err
+	}
+
+	if checkPassword, _ := helpers.CheckPassword(user.Password, []byte(req.NewPassword)); checkPassword {
+		return false, dto.ErrPasswordMatch
+	}
+
+	hashPassword, err := helpers.HashPassword(req.NewPassword)
+	if err != nil {
+		return false, err
+	}
+
+	userUpdate := entities.User {
+		ID: user.ID,
+		Password: hashPassword,
+	}
+
+	if err := us.userRepository.UpdateUser(ctx, userUpdate); err != nil {
 		return false, err
 	}
 
