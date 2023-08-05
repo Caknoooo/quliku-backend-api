@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrPasswordNotMatch                  = errors.New("password not match")
+	ErrPasswordMatch                     = errors.New("the password is the same as before")
 	ErrorUserNotFound                    = errors.New("user not found")
 	ErrorFailedGenerateVerificationCode  = errors.New("failed generate verification code")
 	ErrorVerificationCodeNotMatch        = errors.New("verification code not match")
@@ -56,11 +57,26 @@ type (
 		IsVerified bool   `json:"is_verified"`
 	}
 
-	ForgotPasswordRequest struct {
+	MakeVerificationForgotPasswordRequest struct {
 		Email string `json:"email" form:"email"`
 	}
 
-	ForgotPasswordResponse struct {
+	MakeVerificationForgotPasswordResponse struct {
+		ID    string `json:"id" form:"id"`
+		Email string `json:"email" form:"email"`
+	}
+
+	KodeOTPForgotPasswordRequest struct {
+		Email    string `json:"email" form:"email"`
+		SendCode string `json:"send_code" form:"send_code"`
+	}
+
+	KodeOTPForgotPasswordResponse struct {
 		ID string `json:"id" form:"id"`
+	}
+
+	ForgotPasswordRequest struct {
+		ID          string `json:"id" form:"id"`
+		NewPassword string `json:"new_password" form:"new_password"`
 	}
 )

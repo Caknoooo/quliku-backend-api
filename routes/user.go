@@ -19,6 +19,8 @@ func User(route *gin.Engine, UserController controller.UserController, jwtServic
 
 		// Verifikasi akun
 		routes.POST("/send_verification_forgot_password", UserController.MakeVerificationForgotPassword)
+		routes.POST("/verify_forgot_password", UserController.KodeOTPForgotPassword)
+		routes.POST("/send_forget_password", UserController.SendForgotPassword)
 		routes.POST("/send_verification", UserController.ResendVerificationCode)
 		routes.POST("/verify", UserController.VerifyEmail)
 		routes.POST("/failed_login/verify", UserController.ResendFailedLoginNotVerified)
