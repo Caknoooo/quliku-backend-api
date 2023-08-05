@@ -15,7 +15,7 @@ import (
 const (
 	LOCALHOST  = "http://localhost:8888/api/"
 	IMAGE      = "image/get/"
-	PRODUCTION = "https://quliku-backend-api-production.up.railway.app/api/"
+	PRODUCTION = "http://apibyriski.my.id/api/"
 )
 
 func DecodeBase64(base64String string) ([]byte, error) {
