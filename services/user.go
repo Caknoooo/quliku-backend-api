@@ -27,6 +27,7 @@ type UserService interface {
 	VerifyLogin(ctx context.Context, userDTO dto.UserLoginDTO) (bool, error)
 	VerifyEmail(ctx context.Context, userVerificationDTO dto.UserVerificationDTO) (bool, error)
 	ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error)
+	MakeVerificationForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) (error)
 	ResendFailedLoginNotVerified(ctx context.Context, email string) (bool, error)
 }
 
@@ -99,6 +100,31 @@ func (us *userService) VerifyEmail(ctx context.Context, userVerificationDTO dto.
 	}
 
 	return true, nil
+}
+
+func (us *userService) MakeVerificationForgotPassword(ctx context.Context, req dto.ForgotPasswordRequest) (error) {
+	user, err := us.userRepository.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return err
+	}
+
+	if user.Email == "" {
+		return dto.ErrorUserNotFound
+	}
+
+	draftEmail, err := utils.MakeForgotPasswordEmail(user.Email)
+	if err != nil {
+		return err
+	}
+
+	_ = us.userVeritificationRepository.Create(user.ID, draftEmail["code"], time.Now().Add(time.Minute * 3))
+
+	err = utils.SendMail(user.Email, draftEmail["subject"], draftEmail["body"])
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (us *userService) ResendVerificationCode(ctx context.Context, userVerificationDTO dto.ResendVerificationCode) (bool, error) {
