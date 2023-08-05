@@ -263,7 +263,7 @@ func(uc *userController) MakeVerificationForgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	data := uc.userService.ForgotPassword(ctx.Request.Context(), forgotPasswordReq)
+	data := uc.userService.MakeVerificationForgotPassword(ctx.Request.Context(), forgotPasswordReq)
 	if data != nil {
 		res := utils.BuildResponseFailed("Gagal Mengirim Email", data.Error(), utils.EmptyObj{})
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
