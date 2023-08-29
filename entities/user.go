@@ -16,6 +16,8 @@ type User struct {
 	Role        string    `gorm:"type:varchar(100)" json:"role"`
 	IsVerified  bool      `gorm:"type:boolean;default:false" json:"is_verified"`
 
+	CreateProjectUser []CreateProjectUser `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"create_project_user,omitempty"`
+
 	Timestamp
 }
 
