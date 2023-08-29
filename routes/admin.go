@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Admin(route *gin.Engine, AdminController controller.AdminController, jwtService services.JWTService) {
+func Admin(route *gin.Engine, AdminController controller.AdminController, projectUser controller.ProjectUserController, jwtService services.JWTService) {
 	routes := route.Group("/api/admin")
 	{
 		routes.POST("/login", AdminController.LoginAdmin)
@@ -16,5 +16,8 @@ func Admin(route *gin.Engine, AdminController controller.AdminController, jwtSer
 		routes.GET("/get/mandor", middleware.Authenticate(jwtService), AdminController.GetAllMandorForAdmin)
 		routes.GET("/get/mandor/:id", middleware.Authenticate(jwtService), AdminController.GetDetailMandor)
 		routes.POST("/update/mandor", middleware.Authenticate(jwtService), AdminController.ChangeStatusMandor)
+
+		routes.GET("/get/project_user", middleware.Authenticate(jwtService), projectUser.GetAllProjectUser)
+		routes.GET("/get/project_user/:id", middleware.Authenticate(jwtService), projectUser.GetDetailProjectUser)
 	}
 }

@@ -17,6 +17,7 @@ var (
 	ErrorUserVerificationCodeNotActive   = errors.New("user verification code not active")
 	ErrorUserVerificationCodeAlreadyUsed = errors.New("user verification code already used")
 	ErrorUserAlreadyActive               = errors.New("user already active")
+	ErrRoleDontHaveAccess                = errors.New("role dont have access")
 )
 
 type (

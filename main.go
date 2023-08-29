@@ -22,22 +22,28 @@ import (
 
 func main() {
 	var (
-		db                         *gorm.DB                              = config.SetUpDatabaseConnection()
-		jwtService                 services.JWTService                   = services.NewJWTService()
-		userVerificationRepository repository.UserVerificationRepository = repository.NewUserVerificationRepository(db)
-		userRepository             repository.UserRepository             = repository.NewUserRepository(db)
-		userService                services.UserService                  = services.NewUserService(userRepository, userVerificationRepository)
-		userController             controller.UserController             = controller.NewUserController(userService, jwtService)
-		imageRepository            repository.ImageRepository            = repository.NewImageRepository(db)
-		imageService               services.ImageService                 = services.NewImageService(imageRepository)
-		imageController						controller.ImageController            = controller.NewImageController(imageService, jwtService)
-		mandorRepository 				 repository.MandorRepository           = repository.NewMandorRepository(db)
-		mandorVerificationRepository = repository.NewMandorVerificationRepository(db)
-		mandorService						 services.MandorService                = services.NewMandorService(mandorRepository, mandorVerificationRepository)
-		mandorController				 controller.MandorController           = controller.NewMandorController(mandorService, jwtService)
-		adminRepository 					repository.AdminRepository            = repository.NewAdminRepository(db)
-		adminService 						 services.AdminService                 = services.NewAdminService(adminRepository, mandorRepository)
-		adminController 				 controller.AdminController            = controller.NewAdminController(adminService, jwtService)
+		db                           *gorm.DB                                = config.SetUpDatabaseConnection()
+		jwtService                   services.JWTService                     = services.NewJWTService()
+		userVerificationRepository   repository.UserVerificationRepository   = repository.NewUserVerificationRepository(db)
+		userRepository               repository.UserRepository               = repository.NewUserRepository(db)
+		userService                  services.UserService                    = services.NewUserService(userRepository, userVerificationRepository)
+		userController               controller.UserController               = controller.NewUserController(userService, jwtService)
+		imageRepository              repository.ImageRepository              = repository.NewImageRepository(db)
+		imageService                 services.ImageService                   = services.NewImageService(imageRepository)
+		imageController              controller.ImageController              = controller.NewImageController(imageService, jwtService)
+		mandorRepository             repository.MandorRepository             = repository.NewMandorRepository(db)
+		mandorVerificationRepository                                         = repository.NewMandorVerificationRepository(db)
+		mandorService                services.MandorService                  = services.NewMandorService(mandorRepository, mandorVerificationRepository)
+		mandorController             controller.MandorController             = controller.NewMandorController(mandorService, jwtService)
+		adminRepository              repository.AdminRepository              = repository.NewAdminRepository(db)
+		adminService                 services.AdminService                   = services.NewAdminService(adminRepository, mandorRepository)
+		adminController              controller.AdminController              = controller.NewAdminController(adminService, jwtService)
+		detailCaregoryRepository     repository.DetailCategoryUserRepository = repository.NewDetailCategoryUserRepository(db)
+		typeOfCrafstmanRepository    repository.TypeOfCraftsmanRepository    = repository.NewTypeOfCraftsmanRepository(db)
+		proofOfDamageRepository      repository.ProofOfDamageRepository      = repository.NewProofOfDamageRepository(db)
+		projectUserRepository        repository.ProjectUserRepository        = repository.NewProjectUserRepository(db)
+		projectUserService           services.ProjectUserService             = services.NewProjectUserService(adminRepository, projectUserRepository, proofOfDamageRepository, detailCaregoryRepository, typeOfCrafstmanRepository)
+		projectUserController        controller.ProjectUserController        = controller.NewProjectUserController(projectUserService, jwtService)
 	)
 
 	// Seeder
@@ -52,8 +58,9 @@ func main() {
 	routes.User(server, userController, jwtService)
 	routes.Image(server, imageController)
 	routes.Mandor(server, mandorController, jwtService)
-	routes.Admin(server, adminController, jwtService)
-
+	routes.Admin(server, adminController, projectUserController, jwtService)
+	routes.ProjectUser(server, projectUserController, jwtService)
+	
 	// Seeder Routes
 	seeder.ListBank(server, listBankController)
 
