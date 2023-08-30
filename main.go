@@ -44,6 +44,9 @@ func main() {
 		projectUserRepository        repository.ProjectUserRepository        = repository.NewProjectUserRepository(db)
 		projectUserService           services.ProjectUserService             = services.NewProjectUserService(adminRepository, projectUserRepository, proofOfDamageRepository, detailCaregoryRepository, typeOfCrafstmanRepository)
 		projectUserController        controller.ProjectUserController        = controller.NewProjectUserController(projectUserService, jwtService)
+		pembayaranRepository 			 repository.PembayaranRepository         = repository.NewPembayaranRepository(db)
+		pembayaranService            services.PembayaranService              = services.NewPembayaranService(pembayaranRepository, userRepository, projectUserRepository, adminRepository)
+		pembayaranController         controller.PembayaranController         = controller.NewPembayaranController(pembayaranService, jwtService)
 	)
 
 	// Seeder
@@ -60,6 +63,7 @@ func main() {
 	routes.Mandor(server, mandorController, jwtService)
 	routes.Admin(server, adminController, projectUserController, jwtService)
 	routes.ProjectUser(server, projectUserController, jwtService)
+	routes.Pembayaran(server, pembayaranController, jwtService)
 	
 	// Seeder Routes
 	seeder.ListBank(server, listBankController)

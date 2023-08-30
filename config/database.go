@@ -52,6 +52,7 @@ func SetUpDatabaseConnection() *gorm.DB{
 		entities.DetailCategory{},
 		entities.TypeOfCraftsman{},
 		entities.ProofOfDamage{},
+		entities.Pembayaran{},
 	); err != nil{
 		fmt.Println(err)
 		panic(err)
