@@ -44,7 +44,7 @@ func (pc *pembayaranController) Create(ctx *gin.Context) {
 	}
 
 	var req dto.PembayaranRequest
-	req.Name = ctx.Request.PostForm.Get("name")
+	req.Name = ctx.PostForm("name")
 	req.AccountNumber = ctx.Request.PostForm.Get("account_number")
 	req.BankName = ctx.Request.PostForm.Get("bank_name")
 	req.TotalPrice, _ = strconv.Atoi(ctx.Request.PostForm.Get("total_price"))

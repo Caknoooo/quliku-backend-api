@@ -12,7 +12,7 @@ type (
 		PaymentUrl		string    `json:"payment_url"`
 
 		CreateProjectUserId uuid.UUID         `gorm:"type:uuid;not null" json:"create_project_user_id"`
-		CreateProjectUser   CreateProjectUser `gorm:"foreignkey:CreateProjectUserId" json:"create_project_user"`
+		CreateProjectUser   CreateProjectUser `gorm:"foreignkey:CreateProjectUserId" json:"-"`
 
 		UserId uuid.UUID `gorm:"type:uuid;not null" json:"user_id"`
 		User   User      `gorm:"foreignkey:UserId" json:"-"`

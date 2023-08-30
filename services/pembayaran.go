@@ -45,7 +45,7 @@ func (ps *pembayaranService) Create(ctx context.Context, req dto.PembayaranReque
 	project, err := ps.pu.GetProjectUserDetail(ctx, projectId)
 	if err != nil {
 		return dto.PembayaranResponse{}, err
-	}	
+	}
 	// fmt.Println(projectId)
 	// fmt.Println(userId)
 	user, err := ps.ur.GetUserByID(ctx, userId)
@@ -81,7 +81,6 @@ func (ps *pembayaranService) Create(ctx context.Context, req dto.PembayaranReque
 		UserId:              user.ID,
 	}
 
-	
 	pembayaranCreate, err := ps.pr.Create(ctx, pembayaran)
 	if err != nil {
 		return dto.PembayaranResponse{}, dto.ErrCreatePembayaran
@@ -116,6 +115,7 @@ func (ps *pembayaranService) GetPembayaranById(ctx context.Context, adminId uuid
 		ID:            pembayaran.ID.String(),
 		Name:          pembayaran.Name,
 		AccountNumber: pembayaran.AccountNumber,
+		BankName:      pembayaran.BankName,
 		TotalPrice:    pembayaran.TotalPrice,
 		PaymentUrl:    pembayaran.PaymentUrl,
 	}, nil
