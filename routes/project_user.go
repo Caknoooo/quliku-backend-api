@@ -11,6 +11,7 @@ func ProjectUser(route *gin.Engine, projectUserController controller.ProjectUser
 	routes := route.Group("/api/project_user")
 	{
 		routes.POST("", middleware.Authenticate(jwtService), projectUserController.CreateProjectUser)
-		
+		routes.GET("", middleware.Authenticate(jwtService), projectUserController.GetAllProjectUserByUserId)
+		routes.GET("/:project_id", middleware.Authenticate(jwtService), projectUserController.GetDetailProjectUserById)
 	}
 }

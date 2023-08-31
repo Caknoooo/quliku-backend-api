@@ -16,6 +16,8 @@ type (
 		GetAllProjectUser(ctx *gin.Context)
 		GetDetailProjectUser(ctx *gin.Context)
 		ChangeStatusProjectUser(ctx *gin.Context)
+		GetAllProjectUserByUserId(ctx *gin.Context)
+		GetDetailProjectUserById(ctx *gin.Context)
 	}
 
 	projectUserController struct {
@@ -129,7 +131,7 @@ func (c *projectUserController) GetAllProjectUser(ctx *gin.Context) {
 		return
 	}
 
-	projectUser, err := c.s.GetAllProjectUser(ctx, userID)
+	projectUser, err := c.s.GetAllProjectUserByAdmin(ctx, userID)
 	if err != nil {
 		res := utils.BuildResponseFailed("Gagal Mendapatkan Project", err.Error(), utils.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
@@ -151,7 +153,7 @@ func (c *projectUserController) GetDetailProjectUser(ctx *gin.Context) {
 		return
 	}
 
-	projectUser, err := c.s.GetProjectUserById(ctx, userID, id)
+	projectUser, err := c.s.GetProjectUserByIdByAdmin(ctx, userID, id)
 	if err != nil {
 		res := utils.BuildResponseFailed("Gagal Mendapatkan Project", err.Error(), utils.EmptyObj{})
 		ctx.JSON(http.StatusBadRequest, res)
@@ -186,5 +188,47 @@ func (c *projectUserController) ChangeStatusProjectUser(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mengubah Status Project", projectUser)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *projectUserController) GetAllProjectUserByUserId(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	userID, err := c.jwt.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
+		return
+	}
+
+	projectUser, err := c.s.GetAllProjectUserByUserId(ctx, userID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Project", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Project", projectUser)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *projectUserController) GetDetailProjectUserById(ctx *gin.Context) {
+	projectId := ctx.Param("project_id")
+
+	token := ctx.MustGet("token").(string)
+	userID, err := c.jwt.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
+		return
+	}
+
+	projectUser, err := c.s.GetDetailProjectUserById(ctx, projectId, userID)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mendapatkan Project", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Project", projectUser)
 	ctx.JSON(http.StatusOK, res)
 }
