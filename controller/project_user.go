@@ -15,6 +15,7 @@ type (
 		CreateProjectUser(ctx *gin.Context)
 		GetAllProjectUser(ctx *gin.Context)
 		GetDetailProjectUser(ctx *gin.Context)
+		ChangeStatusProjectUser(ctx *gin.Context)
 	}
 
 	projectUserController struct {
@@ -158,5 +159,32 @@ func (c *projectUserController) GetDetailProjectUser(ctx *gin.Context) {
 	}
 
 	res := utils.BuildResponseSuccess("Berhasil Mendapatkan Project", projectUser)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *projectUserController) ChangeStatusProjectUser(ctx *gin.Context) {
+	token := ctx.MustGet("token").(string)
+	adminId, err := c.jwt.GetIDByToken(token)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Memproses Request", "Token Tidak Valid", nil)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, res)
+		return
+	}
+
+	var req dto.ChangeStatusProjectUserRequest
+	if err := ctx.ShouldBind(&req); err != nil {
+		res := utils.BuildResponseFailed("Gagal Memproses Request", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	projectUser, err := c.s.ChangeStatusProjectUser(ctx, adminId, req)
+	if err != nil {
+		res := utils.BuildResponseFailed("Gagal Mengubah Status Project", err.Error(), utils.EmptyObj{})
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := utils.BuildResponseSuccess("Berhasil Mengubah Status Project", projectUser)
 	ctx.JSON(http.StatusOK, res)
 }
