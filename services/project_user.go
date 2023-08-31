@@ -22,6 +22,7 @@ type (
 		CreateProjectUser(ctx context.Context, req dto.CreateProjectRequest, id uuid.UUID) (dto.CreateProjectResponse, error)
 		GetAllProjectUser(ctx context.Context, userId uuid.UUID) ([]entities.CreateProjectUser, error)
 		GetProjectUserById(ctx context.Context, adminId uuid.UUID, projectId string) (entities.CreateProjectUser, error)
+		ChangeStatusProjectUser(ctx context.Context, adminId uuid.UUID, req dto.ChangeStatusProjectUserRequest) (dto.CreateProjectResponse, error)
 	}
 
 	projectUserService struct {
@@ -66,8 +67,6 @@ func (p *projectUserService) CreateProjectUser(ctx context.Context, req dto.Crea
 	if err != nil {
 		return dto.CreateProjectResponse{}, dto.ErrCreateProjectUser
 	}
-
-	
 
 	for _, v := range req.DetailCategoryRequest {
 		detailCategoryItem := entities.DetailCategory{
@@ -177,7 +176,7 @@ func (p *projectUserService) GetAllProjectUser(ctx context.Context, adminId uuid
 func (p *projectUserService) GetProjectUserById(ctx context.Context, adminId uuid.UUID, projectId string) (entities.CreateProjectUser, error) {
 	admin, err := p.ar.GetAdminByID(ctx, adminId)
 	if err != nil {
-		return entities.CreateProjectUser{}, dto.ErrorUserNotFound
+		return entities.CreateProjectUser{}, dto.ErrAdminNotFound
 	}
 
 	if admin.Role != helpers.ADMIN {
@@ -191,3 +190,45 @@ func (p *projectUserService) GetProjectUserById(ctx context.Context, adminId uui
 
 	return projectUser, nil
 } 
+
+func (p *projectUserService) ChangeStatusProjectUser(ctx context.Context, adminId uuid.UUID, req dto.ChangeStatusProjectUserRequest) (dto.CreateProjectResponse, error) {
+	admin, err := p.ar.GetAdminByID(ctx, adminId)
+	if err != nil {
+		return dto.CreateProjectResponse{}, dto.ErrAdminNotFound
+	}
+
+	if admin.Role != helpers.ADMIN {
+		return dto.CreateProjectResponse{}, dto.ErrRoleDontHaveAccess
+	}
+
+	projectUser, err := p.r.GetProjectUserDetail(ctx, req.ProjectId)
+	if err != nil {
+		return dto.CreateProjectResponse{}, dto.ErrGetProjectUser
+	}
+
+	var isVerifiedAdmin bool
+
+	if req.Status == ACCEPTED {
+		isVerifiedAdmin = true
+	} else if req.Status == REJECTED {
+		isVerifiedAdmin = false
+	} else {
+		return dto.CreateProjectResponse{}, dto.ErrStatusIsNotValid
+	}
+	
+	projectUserRes, err := p.r.ChangeStatusProjectUser(ctx, req.ProjectId, isVerifiedAdmin)
+	if err != nil {
+		return dto.CreateProjectResponse{}, dto.ErrChangeStatusProjectUser
+	}
+
+	return dto.CreateProjectResponse{
+		ID:              projectUser.ID.String(),
+		Category:        projectUser.Category,
+		Alamat:          projectUser.Alamat,
+		DateStart:       projectUser.DateStart,
+		DateEnd:         projectUser.DateEnd,
+		Estimation:      projectUser.Estimation,
+		TotalPrice:      projectUser.TotalPrice,
+		IsVerifiedAdmin: projectUserRes.IsVerifiedAdmin,
+	}, nil
+}

@@ -19,5 +19,6 @@ func Admin(route *gin.Engine, AdminController controller.AdminController, projec
 
 		routes.GET("/get/project_user", middleware.Authenticate(jwtService), projectUser.GetAllProjectUser)
 		routes.GET("/get/project_user/:id", middleware.Authenticate(jwtService), projectUser.GetDetailProjectUser)
+		routes.PATCH("/update/project_user", middleware.Authenticate(jwtService), projectUser.ChangeStatusProjectUser)
 	}
 }

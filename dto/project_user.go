@@ -6,12 +6,15 @@ import (
 )
 
 var (
-	ErrCreateProjectUser = errors.New("failed to create project user")
-	ErrDetailCategory    = errors.New("failed to create detail category")
-	ErrProofOfDamage     = errors.New("failed to create proof of damage")
-	ErrTypeOfCraftsman   = errors.New("failed to create type of craftsman")
-	ErrGetAllProjectUser = errors.New("failed to get all project user")
-	ErrGetProjectUser    = errors.New("failed to get project user")
+	ErrCreateProjectUser       = errors.New("failed to create project user")
+	ErrDetailCategory          = errors.New("failed to create detail category")
+	ErrProofOfDamage           = errors.New("failed to create proof of damage")
+	ErrTypeOfCraftsman         = errors.New("failed to create type of craftsman")
+	ErrGetAllProjectUser       = errors.New("failed to get all project user")
+	ErrGetProjectUser          = errors.New("failed to get project user")
+	ErrChangeStatusProjectUser = errors.New("failed to change status project user")
+	ErrStatusIsNotValid        = errors.New("status is not valid")
+	ErrProjectUserIsVerified   = errors.New("project user is verified")
 )
 
 type (
@@ -44,6 +47,11 @@ type (
 		Estimation      string `json:"estimation"`
 		TotalPrice      int    `json:"price"`
 		IsVerifiedAdmin bool   `json:"is_verified_admin"`
+	}
+
+	ChangeStatusProjectUserRequest struct {
+		ProjectId string `json:"project_id"`
+		Status    string `json:"status"`
 	}
 
 	DetailCategoryResponse struct {

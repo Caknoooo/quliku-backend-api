@@ -12,6 +12,7 @@ type (
 		CreateProjectUser(ctx context.Context, projectUser entities.CreateProjectUser) (entities.CreateProjectUser, error)
 		GetAllProjectUser(ctx context.Context) ([]entities.CreateProjectUser, error)
 		GetProjectUserDetail(ctx context.Context, projectUserID string) (entities.CreateProjectUser, error)
+		ChangeStatusProjectUser(ctx context.Context, projectUserId string, status bool) (entities.CreateProjectUser, error)
 	}
 
 	projectUserRepository struct {
@@ -45,6 +46,16 @@ func (r *projectUserRepository) GetProjectUserDetail(ctx context.Context, projec
 	var projectUser entities.CreateProjectUser
 
 	if err := r.db.Preload("DetailCategory").Preload("ProofOfDamage").Preload("TypeOfCraftsman").Where("id = ?", projectUserID).Take(&projectUser).Error; err != nil {
+		return entities.CreateProjectUser{}, err
+	}
+
+	return projectUser, nil
+}
+
+func (r *projectUserRepository) ChangeStatusProjectUser(ctx context.Context, projectUserId string, status bool) (entities.CreateProjectUser, error) {
+	var projectUser entities.CreateProjectUser
+
+	if err := r.db.Model(&projectUser).Where("id = ?", projectUserId).Update("is_verified_admin", status).Error; err != nil {
 		return entities.CreateProjectUser{}, err
 	}
 
