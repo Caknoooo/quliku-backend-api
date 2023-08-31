@@ -42,7 +42,7 @@ func main() {
 		typeOfCrafstmanRepository    repository.TypeOfCraftsmanRepository    = repository.NewTypeOfCraftsmanRepository(db)
 		proofOfDamageRepository      repository.ProofOfDamageRepository      = repository.NewProofOfDamageRepository(db)
 		projectUserRepository        repository.ProjectUserRepository        = repository.NewProjectUserRepository(db)
-		projectUserService           services.ProjectUserService             = services.NewProjectUserService(adminRepository, projectUserRepository, proofOfDamageRepository, detailCaregoryRepository, typeOfCrafstmanRepository)
+		projectUserService           services.ProjectUserService             = services.NewProjectUserService(adminRepository, projectUserRepository, proofOfDamageRepository, detailCaregoryRepository, typeOfCrafstmanRepository, userRepository)
 		projectUserController        controller.ProjectUserController        = controller.NewProjectUserController(projectUserService, jwtService)
 		pembayaranRepository 			 repository.PembayaranRepository         = repository.NewPembayaranRepository(db)
 		pembayaranService            services.PembayaranService              = services.NewPembayaranService(pembayaranRepository, userRepository, projectUserRepository, adminRepository)

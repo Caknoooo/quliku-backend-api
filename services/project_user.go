@@ -20,9 +20,11 @@ const (
 type (
 	ProjectUserService interface {
 		CreateProjectUser(ctx context.Context, req dto.CreateProjectRequest, id uuid.UUID) (dto.CreateProjectResponse, error)
-		GetAllProjectUser(ctx context.Context, userId uuid.UUID) ([]entities.CreateProjectUser, error)
-		GetProjectUserById(ctx context.Context, adminId uuid.UUID, projectId string) (entities.CreateProjectUser, error)
+		GetAllProjectUserByAdmin(ctx context.Context, adminId uuid.UUID) ([]entities.CreateProjectUser, error)
+		GetProjectUserByIdByAdmin(ctx context.Context, adminId uuid.UUID, projectId string) (entities.CreateProjectUser, error)
 		ChangeStatusProjectUser(ctx context.Context, adminId uuid.UUID, req dto.ChangeStatusProjectUserRequest) (dto.CreateProjectResponse, error)
+		GetAllProjectUserByUserId(ctx context.Context, userId uuid.UUID) ([]entities.CreateProjectUser, error)
+		GetDetailProjectUserById(ctx context.Context, projectId string, userId uuid.UUID) (entities.CreateProjectUser, error)
 	}
 
 	projectUserService struct {
@@ -31,16 +33,18 @@ type (
 		prf repository.ProofOfDamageRepository
 		dtc repository.DetailCategoryUserRepository
 		toc repository.TypeOfCraftsmanRepository
+		ur repository.UserRepository
 	}
 )
 
-func NewProjectUserService(ar repository.AdminRepository, r repository.ProjectUserRepository, prf repository.ProofOfDamageRepository, dtc repository.DetailCategoryUserRepository, toc repository.TypeOfCraftsmanRepository) *projectUserService {
+func NewProjectUserService(ar repository.AdminRepository, r repository.ProjectUserRepository, prf repository.ProofOfDamageRepository, dtc repository.DetailCategoryUserRepository, toc repository.TypeOfCraftsmanRepository, ur repository.UserRepository) *projectUserService {
 	return &projectUserService{
 		ar: ar,
 		r:   r,
 		prf: prf,
 		dtc: dtc,
 		toc: toc,
+		ur: ur,
 	}
 }
 
@@ -155,7 +159,43 @@ func (p *projectUserService) CreateProjectUser(ctx context.Context, req dto.Crea
 	}, nil
 }
 
-func (p *projectUserService) GetAllProjectUser(ctx context.Context, adminId uuid.UUID) ([]entities.CreateProjectUser, error) {
+func (p *projectUserService) GetAllProjectUserByUserId(ctx context.Context, userId uuid.UUID) ([]entities.CreateProjectUser, error) {
+	user, err := p.ur.GetUserByID(ctx, userId)
+	if err != nil {
+		return []entities.CreateProjectUser{}, dto.ErrorUserNotFound
+	}
+
+	if user.Role != helpers.USER {
+		return []entities.CreateProjectUser{}, dto.ErrRoleDontHaveAccess
+	}
+
+	projectUser, err := p.r.GetAllProjectByUserId(ctx, userId.String())
+	if err != nil {
+		return []entities.CreateProjectUser{}, dto.ErrGetAllProjectUser
+	}
+
+	return projectUser, nil
+}
+
+func (p *projectUserService) GetDetailProjectUserById(ctx context.Context, projectId string, userId uuid.UUID) (entities.CreateProjectUser, error) {
+	user, err := p.ur.GetUserByID(ctx, userId)
+	if err != nil {
+		return entities.CreateProjectUser{}, dto.ErrorUserNotFound
+	}
+
+	if user.Role != helpers.USER {
+		return entities.CreateProjectUser{}, dto.ErrRoleDontHaveAccess
+	}
+
+	projectUser, err := p.r.GetDetailProjectUserById(ctx, projectId, userId.String())
+	if err != nil {
+		return entities.CreateProjectUser{}, dto.ErrGetProjectUser
+	}
+
+	return projectUser, nil
+}
+
+func (p *projectUserService) GetAllProjectUserByAdmin(ctx context.Context, adminId uuid.UUID) ([]entities.CreateProjectUser, error) {
 	admin, err := p.ar.GetAdminByID(ctx, adminId)
 	if err != nil {
 		return []entities.CreateProjectUser{}, dto.ErrorUserNotFound
@@ -173,7 +213,7 @@ func (p *projectUserService) GetAllProjectUser(ctx context.Context, adminId uuid
 	return projectUser, nil
 }
 
-func (p *projectUserService) GetProjectUserById(ctx context.Context, adminId uuid.UUID, projectId string) (entities.CreateProjectUser, error) {
+func (p *projectUserService) GetProjectUserByIdByAdmin(ctx context.Context, adminId uuid.UUID, projectId string) (entities.CreateProjectUser, error) {
 	admin, err := p.ar.GetAdminByID(ctx, adminId)
 	if err != nil {
 		return entities.CreateProjectUser{}, dto.ErrAdminNotFound
